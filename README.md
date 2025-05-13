@@ -19,9 +19,10 @@ nix run nixpkgs#nixos-rebuild -- build-vm -I nixos-config=./configuration.nix
 # Or to open it directly in the current terminal:
 ./result/bin/run-*-vm -nographic
 # to shutdown just shutdown the VM and you'll return to your current terminal
-
 ```
 Running the virtual machine will create a `nixos.qcow2` file in the current directory. **Delete this file** when you change the configuration.
+
+This is just a basic example. See running scripts to see what other options are used here.
 
 
 # SSH
@@ -61,6 +62,8 @@ list all VMs: `virsh list --all`
 
 # VPN
 
+todo: problematicno dodjeljivanje imena tailscale doda suffix `-1`, `-2`, itd ako dvaput upalis vm sa istim imenom (cak i ako prvo ugasis ovaj prije)
+
 Use tailscale. You can even host your own server with headscale
 
 todo: validate this
@@ -74,14 +77,22 @@ todo: validate this
     - you can also copy this command from tailscale web
 - run two VMs
     - get ip from one and ping it from the other
-    - get IP with `ip a` and then see `tailscale0` inet or just copy from the tailscale website gui
+    - get IP with `ip a` and then see `tailscale0` inet or just copy from the tailscale website gui (or just `tailscale ip --4` or `ip addr show tailscale0`)
 
 `services.tailscale.authKeyFile`
 - A file containing the auth key. **Tailscale will be automatically started if provided.**
 
+You can also find the Tailscale IP for other devices on your network by adding the device hostname after the command. For example: `tailscale ip raspberrypi`
+- [source](https://tailscale.com/kb/1080/cli#ip)
 
-## TODO: can two devices have the same key?
 
+
+# Other notes
+
+`./result/bin/run-*-vm` ima puno opcija. Baci oko ako zatreba
+
+qcow2 je image
+- https://www.linux-kvm.org/page/Qcow2
 
 
 
