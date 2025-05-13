@@ -1,6 +1,12 @@
 
 todo: write instructions for what you do and how to recreate it
 
+# Setup
+
+In `secrets/` directory cresate a file named `tailscale.authkey` (or change configuration to use different name and path)
+- the file should just cointain the reusable tailscale key
+
+
 # Basic run
 
 how to start a VM only using nix (no nixos host needed):
@@ -19,6 +25,8 @@ Running the virtual machine will create a `nixos.qcow2` file in the current dire
 
 
 # SSH
+
+todo: not working
 
 among other configs, in configuration.nix add
 ```nix
@@ -49,5 +57,31 @@ list all VMs: `virsh list --all`
 - todo: ne radi. Mozda jer je virsh u nix shell?
 - or... `ps aux | grep qemu`
 - or search "qemu" in mission center app
+
+
+# VPN
+
+Use tailscale. You can even host your own server with headscale
+
+todo: validate this
+- open tailscale web app
+- add device - linux server
+    - set Reusable auth key - so multiple machines can join using it
+    - generate scrip and copy `--auth-key` from it
+- in your VM config, add `services.tailscale.enable = true;`
+- `sudo tailscale up --login-server http://<HOST-IP>:8080 --authkey tskey-abc123...`
+    - no `--login-server` if using online tailscale server
+    - you can also copy this command from tailscale web
+- run two VMs
+    - get ip from one and ping it from the other
+    - get IP with `ip a` and then see `tailscale0` inet or just copy from the tailscale website gui
+
+`services.tailscale.authKeyFile`
+- A file containing the auth key. **Tailscale will be automatically started if provided.**
+
+
+## TODO: can two devices have the same key?
+
+
 
 
