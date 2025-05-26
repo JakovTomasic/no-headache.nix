@@ -24,6 +24,8 @@ Running the virtual machine will create a `nixos.qcow2` file in the current dire
 
 This is just a basic example. See running scripts to see what other options are used here.
 
+This builds VM configuration and by running it you create a image for persistent storage. Image is just around 10 MB big because `/nix/store` is shared with the host.
+
 
 # SSH
 
@@ -85,6 +87,7 @@ todo: validate this
 You can also find the Tailscale IP for other devices on your network by adding the device hostname after the command. For example: `tailscale ip raspberrypi`
 - [source](https://tailscale.com/kb/1080/cli#ip)
 
+Tailscale automatically assigns ip adresses and hostnames (giving it suffix if two are the same)
 
 
 # Other notes

@@ -1,6 +1,7 @@
 { config, pkgs, ... }:
 
 {
+  # TODO: pin version
   imports = [ <nixpkgs/nixos/modules/virtualisation/qemu-vm.nix> ];
 
   # Allow a custom Python script path to be injected
@@ -63,7 +64,7 @@
 
     networking = {
       firewall = {
-        # TODO: 5000 je potrebno za server
+        # TODO: 5000 je potrebno za server.py
         allowedTCPPorts = [ 22 5000 ];
         allowedUDPPorts = [ 5000 ];
         enable = true;
@@ -91,6 +92,7 @@
     };
 
     # Set nixy password (plaintext; for testing only)
+    # TODO: make username configurable (and the password)
     users.users.nixy.isNormalUser = true;
     users.users.nixy.initialPassword = "nixos";
     users.users.nixy.extraGroups = [ "wheel" ];
