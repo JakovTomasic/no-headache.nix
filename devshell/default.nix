@@ -11,7 +11,6 @@ let
         ./options.nix
         value
         {
-          # TODO: maybe I don't need this
           configName = name;
         }
       ];

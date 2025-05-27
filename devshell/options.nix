@@ -1,22 +1,15 @@
 { lib, ... }:
 {
   options = {
-    # TODO: only one path? Copy this? How does this work?
-    # TODO: remove this!
-    custom.pythonScript = lib.mkOption {
-      type = lib.types.str;
-      description = "Path to the Python script to run.";
-    };
-
-    # TODO: optional, default to configName somehow
-    custom.hostName = lib.mkOption {
-      type = lib.types.str;
-      description = "Network name";
-    };
-
     configName = lib.mkOption {
       type = lib.types.str;
-      description = "Name of the config defined in configs.nix";
+      description = "Name of the config defined in configs.nix. By default, this also defines netowrking.hostName";
+    };
+
+    username = lib.mkOption {
+      type = lib.types.str;
+      default = "nixy";
+      description = "Name of the main user";
     };
 
     tailscaleAuthKeyFile = lib.mkOption {
@@ -32,15 +25,12 @@
     };
 
     init = {
-      # TODO: write description
       script = lib.mkOption {
         type = lib.types.str;
         default = "";
-        description = "A bash script ";
+        description = "A bash script that's executed only once - when the environment starts.";
       };
     };
-
-    # TODO: accept all other nixos config options (except hostname...)
   };
 
   # TODO: write assertions if needed (e.g. no config option for hostname and some other options)

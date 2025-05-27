@@ -1,6 +1,6 @@
 import time
 
-LOG_FILE = '/home/nixy/python-log.txt'
+LOG_FILE = '/home/pythonguy/python-log.txt'
 
 def main():
     i = 0

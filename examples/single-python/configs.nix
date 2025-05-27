@@ -1,13 +1,13 @@
 { pkgs, ... }:
 {
   python-code = {
-    custom.pythonScript = "/etc/code.py";
-    custom.hostName = "python-code";
     init.script = ''
       python /etc/code.py
     '';
+    # Example: you can define custom username.
+    username="pythonguy";
+
     nixos-config = {
-      # TODO: this may not work
       environment.etc."code.py".source = ./code.py;
 
       environment.systemPackages = with pkgs; [ python3 ];
