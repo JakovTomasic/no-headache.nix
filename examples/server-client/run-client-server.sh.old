@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+
+# TODO: remove this file when the example initializes properly
+
 echo "vidi upute u ovom file"
 # prvo u tailscale makni sve machines koji se zovu client ili server
 # onda runnaj server i cekaj da se upali

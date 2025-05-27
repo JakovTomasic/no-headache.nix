@@ -9,7 +9,6 @@ let
   tailscaleEnabled = config.tailscaleAuthKeyFile != null;
 in
 {
-  # TODO: maybe make this default config and import it into the nixos-config? (which one has precedence here?)
   # TODO: pin version
   imports = [ config.nixos-config <nixpkgs/nixos/modules/virtualisation/qemu-vm.nix>];
 
@@ -72,13 +71,8 @@ in
 
   # Enable OpenSSH server
   services.openssh.enable = lib.mkDefault true;
-  # services.openssh.settings.PermitRootLogin = "yes";
-  # services.openssh.settings.PasswordAuthentication = true;
-
-  # # TODO: move to secrets file? (or at least to configs.nix. This mustn't be here)
-  # users.users."${config.username}".openssh.authorizedKeys.keys = lib.mkDefault [
-  #   "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC5UeLggeVy8fX4dui4qGklKMbSTtKPfvDWE2ivoWxuGaCKkCyLKbNM+S/mzLUsHi2h9jCGNZOoXB3II8BNkIqwHImBeUgjE/tdP86Fy80+ZTrmwN2Cah7Gx5Oeqy0vcN3NKsAt0+Ey6XfFl8IdFPYQJ71jkDjcyVy/45isSgAwmhTP+guQwVUe9A5ZLXzu6pYYwQaTfyixEcxMiepOcCntE4L1CWHNiBwDmEGu+tN1yxEiz30wWsqpM/VLOM/XsohyQLQl/r5aEOfpjvg1Q8qNkN+RUkr9cnXoGntDz+AHb0bCt6Lvfv0FZuTFHWWQi8NKMLluedchDzOs4WeJs6fPmuGq339eEaKHluadGeFHHWormfMCwTMy+zPgdGGwF7ZOkjpw6QcCkEVmJrWLc4Qbqjnaie3lkqIq2DO6EF7sF+6fCk9FgvyvKz0dCAnqFnKfhyHOogcb+DnC79Tm90jScH4vUWvXXHaSjHcdTPw51n13InCXGFbZUFJrUcOElF2q08TL3n7vONThY+/J/FRSg0f/8ZKsC1Vmb9j0nVv0iF3fxCu9HfggTq+mLZCDxPEzxl89O11MuPHknps1Be6S0CDGO7lKf69anppjTs970T/jPCapxB4/FjZ+kdNzHtW84uaWiEQbzjdWisIrxETZAFCJ8le1lUtFCcdbWfh8Mw== ssh key for local nixos VMs"
-  # ];
+  # services.openssh.settings.PermitRootLogin = lib.mkDefault "yes";
+  # services.openssh.settings.PasswordAuthentication = lib.mkDefault true;
 
   services.tailscale = {
     enable = lib.mkDefault tailscaleEnabled;

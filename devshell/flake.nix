@@ -16,10 +16,6 @@
 
         installPhase = ''
           mkdir -p $out/bin
-          # cp $src/build.sh $out/bin/
-          # cp $src/run-all.sh $out/bin/
-          # cp $src/build-and-run-all.sh $out/bin/
-
           cp $src/base-configuration.nix $out/
           cp $src/default.nix $out/
           cp $src/options.nix $out/
