@@ -1,9 +1,9 @@
-{ userConfigsFile, secretsDir }:
+{ userConfigsFile }:
 let
   pkgs = import <nixpkgs> {};
-  configBuilder = config: (import ./base-configuration.nix { inherit pkgs config secretsDir; });
+  configBuilder = config: (import ./base-configuration.nix { inherit pkgs config; });
 
-  userConfigs = import userConfigsFile { inherit pkgs secretsDir; };
+  userConfigs = import userConfigsFile { inherit pkgs; };
   # Generates nix configurations (effectively configuration.nix files)
   configurations = builtins.mapAttrs (name: value:
     configBuilder (pkgs.lib.evalModules {

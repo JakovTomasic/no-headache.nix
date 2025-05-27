@@ -31,19 +31,14 @@
       build = pkgs.writeShellScriptBin "buildVms" ''
         # Default values
         CONFIG_FILE="./configs.nix"
-        SECRETS_DIR="./secrets"
 
-        USAGE_MESSAGE="Usage: $0 [-c|--config <file>] [-s|--secrets <file>]"
+        USAGE_MESSAGE="Usage: $0 [-c|--config <file>]"
 
         # Parse arguments
         while [[ "$#" -gt 0 ]]; do
           case "$1" in
             -c|--config)
               CONFIG_FILE="$2"
-              shift 2
-              ;;
-            -s|--secrets)
-              SECRETS_DIR="$2"
               shift 2
               ;;
             -h|--help)
@@ -59,9 +54,8 @@
         done
 
         echo "Using config file: $CONFIG_FILE"
-        echo "Using secrets dir: $SECRETS_DIR"
 
-        nix-build ${myFiles}/default.nix --arg userConfigsFile "$CONFIG_FILE" --arg secretsDir "$SECRETS_DIR"
+        nix-build ${myFiles}/default.nix --arg userConfigsFile "$CONFIG_FILE"
       '';
       runAll = pkgs.writeShellScriptBin "runAllVms" ''
         ./result/bin/runAll

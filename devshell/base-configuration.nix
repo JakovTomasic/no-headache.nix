@@ -1,5 +1,9 @@
 # config type is defined in options.nix. It has all the option values
-{ pkgs, config, secretsDir }:
+{ pkgs, config }:
+let
+  userPkgs = config.nixos-config.environment.systemPackages;
+  tailscaleEnabled = config.tailscaleAuthKeyFile != null;
+in
 {
   # TODO: maybe make this default config and import it into the nixos-config? (which one has precedence here?)
   # TODO: pin version
@@ -11,32 +15,35 @@
   boot.loader.efi.canTouchEfiVariables = true;
 
   # Minimal set of packages
-  environment.systemPackages = with pkgs; [ vim htop openssh python3 ];
-
+  environment.systemPackages = userPkgs ++ (with pkgs; [ vim htop openssh ]);
 
   # Enable a systemd service to run a script (provided by machine config)
-  # TODO: ovo treba biti configurable - startup script... ???
-  systemd.services.python-app = {
+  systemd.services.script-at-boot = let
+    tailscaleServiceOrNot = if tailscaleEnabled then [ "tailscaled.service" ] else [];
+    tailscaleOrNot = if tailscaleEnabled then [ pkgs.tailscale ] else [];
+  in {
     enable = true;
-    # script = ''${config.custom.pythonScript}'';
     script = ''
-        # TODO: remove these debug strings
-        touch /home/nixy/systemdRadi
-        touch /etc/systemdRadi
-        tailscale ip -4 server > /home/nixy/tsip
-        ${pkgs.python3}/bin/python ${config.custom.pythonScript}
+      # Make tailscale ephemeral
+      ${if tailscaleEnabled then "tailscaled -state=mem:" else ""}
+      ${config.init.script}
     '';
+
+    # TODO: re-enable this? Make python script that crashes every 5 ticks to test restarting?
     # serviceConfig = {
     #   ExecStart = "${pkgs.python3}/bin/python ${config.custom.pythonScript}";
     #   Restart = "always";
     # };
+
     wantedBy = [ "multi-user.target" ];
-    after = [ "network-online.target" "tailscaled.service" ];
-    requires = [ "network-online.target" "tailscaled.service" ];
+    after = [ "network-online.target" ] ++ tailscaleServiceOrNot;
+    requires = [ "network-online.target" ] ++ tailscaleServiceOrNot;
 
-    path = with pkgs; [ iproute2 tailscale coreutils ];  # <- makes tailscale, ip, etc. available
+    # Manually add all binary files to path (otherwise no program will be available in the path)
+    # TODO: can I remove iproute2 and coreutils?
+    path = userPkgs ++ tailscaleOrNot ++ (with pkgs; [ iproute2 coreutils ]);
 
-    preStart = ''
+    preStart = if config.tailscaleAuthKeyFile == null then "" else ''
         echo "Waiting for Tailscale IP..."
         while ! tailscale ip --4 | grep -qE '^100\.'; do
         sleep 1
@@ -64,16 +71,15 @@
   # services.openssh.settings.PermitRootLogin = "yes";
   # services.openssh.settings.PasswordAuthentication = true;
 
-  # TODO: move to secrets file?
-  # TODO: but this doesn't work anyways?
+  # TODO: move to secrets file? (or at least to configs.nix. This mustn't be here)
   users.users.nixy.openssh.authorizedKeys.keys = [
     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC5UeLggeVy8fX4dui4qGklKMbSTtKPfvDWE2ivoWxuGaCKkCyLKbNM+S/mzLUsHi2h9jCGNZOoXB3II8BNkIqwHImBeUgjE/tdP86Fy80+ZTrmwN2Cah7Gx5Oeqy0vcN3NKsAt0+Ey6XfFl8IdFPYQJ71jkDjcyVy/45isSgAwmhTP+guQwVUe9A5ZLXzu6pYYwQaTfyixEcxMiepOcCntE4L1CWHNiBwDmEGu+tN1yxEiz30wWsqpM/VLOM/XsohyQLQl/r5aEOfpjvg1Q8qNkN+RUkr9cnXoGntDz+AHb0bCt6Lvfv0FZuTFHWWQi8NKMLluedchDzOs4WeJs6fPmuGq339eEaKHluadGeFHHWormfMCwTMy+zPgdGGwF7ZOkjpw6QcCkEVmJrWLc4Qbqjnaie3lkqIq2DO6EF7sF+6fCk9FgvyvKz0dCAnqFnKfhyHOogcb+DnC79Tm90jScH4vUWvXXHaSjHcdTPw51n13InCXGFbZUFJrUcOElF2q08TL3n7vONThY+/J/FRSg0f/8ZKsC1Vmb9j0nVv0iF3fxCu9HfggTq+mLZCDxPEzxl89O11MuPHknps1Be6S0CDGO7lKf69anppjTs970T/jPCapxB4/FjZ+kdNzHtW84uaWiEQbzjdWisIrxETZAFCJ8le1lUtFCcdbWfh8Mw== ssh key for local nixos VMs"
   ];
 
   services.tailscale = {
-    enable = true;
+    enable = tailscaleEnabled;
     # autostart tailscale (even before login to nixos)
-    authKeyFile = builtins.toPath "${secretsDir}/tailscale.authkey";
+    authKeyFile = config.tailscaleAuthKeyFile;
     extraUpFlags = [
       # "--login-server" "http://<HOST-IP>:8080"
     ];
@@ -87,7 +93,6 @@
 
 
   # Resource limits for VM (used by qemu-vm module)
-  # TODO: uncomment
   virtualisation.memorySize = 1024;   # 1 GB RAM
   virtualisation.cores = 1;           # 1 CPU core
 

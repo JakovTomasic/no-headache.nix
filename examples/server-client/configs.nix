@@ -1,8 +1,9 @@
-{ pkgs, secretsDir, ... }:
+{ pkgs, ... }:
 {
   client = {
     custom.pythonScript = "/etc/client.py";
     custom.hostName = "client";
+    tailscaleAuthKeyFile = ./secrets/tailscale.authkey;
     nixos-config = {
       # users.users.nixy.extraGroups = [ "aaaaa" ];
 
@@ -14,6 +15,7 @@
   server = {
     custom.pythonScript = "/etc/server.py";
     custom.hostName = "server";
+    tailscaleAuthKeyFile = ./secrets/tailscale.authkey;
     nixos-config = {
       # Deploy the script into /etc/python-app/server.py
       # TODO: this may not work

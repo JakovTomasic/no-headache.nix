@@ -2,12 +2,16 @@ import socket
 import time
 import subprocess
 
-proc = subprocess.run(['tailscale', 'ip', '-4', 'server'], encoding='utf-8', stdout=subprocess.PIPE)
-ip = proc.stdout
+SERVER_IP = ""
 
-# SERVER_IP = '192.168.1.100'  # Replace with server's LAN IP
-# SERVER_IP = '127.0.0.1'
-SERVER_IP = ip.split('\n')[0]
+while SERVER_IP[0:4] != "100.":
+    proc = subprocess.run(['tailscale', 'ip', '-4', 'server'], encoding='utf-8', stdout=subprocess.PIPE)
+    ip = proc.stdout
+
+    # SERVER_IP = '192.168.1.100'  # Replace with server's LAN IP
+    # SERVER_IP = '127.0.0.1'
+    SERVER_IP = ip.split('\n')[0]
+
 PORT = 5000
 
 def main():
