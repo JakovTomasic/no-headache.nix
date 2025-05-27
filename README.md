@@ -80,6 +80,8 @@ todo: validate this
 - open tailscale web app
 - add device - linux server
     - set Reusable auth key - so multiple machines can join using it
+    - enable Ephemeral - Automatically remove the device from your tailnet when it goes offline
+    - Auth key expiration - choose as you wish
     - generate scrip and copy `--auth-key` from it
 - in your VM config, add `services.tailscale.enable = true;`
 - `sudo tailscale up --login-server http://<HOST-IP>:8080 --authkey tskey-abc123...`
