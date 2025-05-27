@@ -1,6 +1,12 @@
 
 todo: write instructions for what you do and how to recreate it
 
+This is user documentation. For developer documentation see **TODO**.
+
+**TODO** write user documentation
+- update everything when api is well formed
+
+
 # Setup
 
 In `secrets/` directory cresate a file named `tailscale.authkey` (or change configuration to use different name and path)
