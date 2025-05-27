@@ -22,7 +22,9 @@ let
   runVmScripts = pkgs.lib.foldl' pkgs.lib.mergeAttrs {} (builtins.map (machine:
     {
       "${machine.name}" = pkgs.writeShellScriptBin "${machine.name}" ''
-        # TODO: error if .qcow2 file exists
+        if [[ -e "${machine.name}.qcow2" ]]; then
+          echo "Warning: using cached image '${machine.name}.qcow2'. Delete it if you've rebuilt VM." >&2
+        fi
         echo "Running ${machine.name}"
         # TODO: run in background, don't block execution - provide options for that (as parameters to this script?)
         ${machine.vm-path}/bin/run-${machine.name}-vm &
