@@ -61,9 +61,8 @@ in
 
   networking = {
     firewall = {
-      # TODO: 5000 je potrebno za server.py
-      allowedTCPPorts = [ 22 5000 ]; # TODO: ++ ports to open
-      allowedUDPPorts = [ 5000 ]; # TODO: ++ ports to open
+      allowedTCPPorts = [ 22 ];
+      allowedUDPPorts = [ ];
       enable = lib.mkDefault true;
     };
     hostName = lib.mkDefault config.configName;

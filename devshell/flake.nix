@@ -2,11 +2,10 @@
   description = "Dev shell encapsulating needed files and executables";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+  inputs.flake-utils.url = "github:numtide/flake-utils";
 
-  outputs = { self, nixpkgs }: 
+  outputs = { self, nixpkgs, flake-utils }: flake-utils.lib.eachDefaultSystem (system:
     let
-      # TODO: make configurable?
-      system = "x86_64-linux";
       pkgs = import nixpkgs { inherit system; };
 
       # Define a derivation that includes your files
@@ -60,7 +59,7 @@
         buildVms && runAllVms
       '';
     in {
-      devShells.${system}.default = pkgs.mkShell {
+      devShells.default = pkgs.mkShell {
         # myFiles $out/bin will be automatically added to the path
         packages = [ myFiles build runAll buildAndRun printFilesPath ];
 
@@ -68,6 +67,6 @@
           echo "Dev shell loaded."
         '';
       };
-    };
+    });
 }
 

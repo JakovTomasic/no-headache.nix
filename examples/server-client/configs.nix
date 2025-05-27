@@ -23,6 +23,8 @@ in
       environment.etc."server.py".source = ./server.py;
 
       users.users.pythonguy.openssh.authorizedKeys.keys = [ sshkey ];
+
+      networking.firewall.allowedTCPPorts = [ 5000 ];
     };
   };
 }
