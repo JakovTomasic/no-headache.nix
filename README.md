@@ -19,6 +19,8 @@ nix run nixpkgs#nixos-rebuild -- build-vm -I nixos-config=./configuration.nix
 # Or to open it directly in the current terminal:
 ./result/bin/run-*-vm -nographic
 # to shutdown just shutdown the VM and you'll return to your current terminal
+# Or run in background without opening any terminal
+./result/bin/run-*-vm -display none &
 ```
 Running the virtual machine will create a `nixos.qcow2` file in the current directory. **Delete this file** when you change the configuration.
 

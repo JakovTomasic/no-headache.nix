@@ -23,6 +23,7 @@ let
   runVmScripts = pkgs.lib.foldl' pkgs.lib.mergeAttrs {} (builtins.map (machine:
     {
       "${machine.name}" = pkgs.writeShellScriptBin "${machine.name}" ''
+        # TODO: error if .qcow2 file exists
         echo "Running ${machine.name}"
         # TODO: run in background, don't block execution - provide options for that (as parameters to this script?)
         ${machine.vm-path}/bin/run-${machine.name}-vm &
@@ -32,7 +33,7 @@ let
   runVmScriptPaths = builtins.attrValues runVmScripts;
 
   # A script that runs all VMs at the same time
-  runAllVmsScript = pkgs.writeShellScriptBin "build" ''
+  runAllVmsScript = pkgs.writeShellScriptBin "runAll" ''
     ${builtins.concatStringsSep "\n" (
         builtins.attrValues (builtins.mapAttrs (name: value: "${value}/bin/${name}") runVmScripts)
     )}

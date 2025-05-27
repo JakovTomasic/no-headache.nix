@@ -5,4 +5,4 @@
 # nix-shell -p jq --run "nix-instantiate --eval --json --strict | jq"
 
 nix-build
-./result/bin/build
+./run-all.sh
