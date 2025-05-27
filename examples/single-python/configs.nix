@@ -8,6 +8,7 @@
     username="pythonguy";
 
     nixos-config = {
+      # Copy the script into /etc/code.py
       environment.etc."code.py".source = ./code.py;
 
       # Install programs here. Search: https://search.nixos.org/packages

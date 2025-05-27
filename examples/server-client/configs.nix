@@ -10,7 +10,6 @@ in
     tailscaleAuthKeyFile = ./secrets/tailscale.authkey;
     nixos-config = {
       # Deploy the script into /etc/client.py
-      # TODO: this may not work
       environment.etc."client.py".source = ./client.py;
 
       users.users.pythonguy.openssh.authorizedKeys.keys = [ sshkey ];

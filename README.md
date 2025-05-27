@@ -62,21 +62,18 @@ ssh root@localhost -p 10022
 
 # QEMU
 
-before: `nix-shell -p libvirt`
-
-list all VMs: `virsh list --all`
-- todo: ne radi. Mozda jer je virsh u nix shell?
-- or... `ps aux | grep qemu`
-- or search "qemu" in mission center app
+Virsh doesn't work because nix doesn't use it.
+List all QEMU processes `ps aux | grep qemu` to see what VMs are running.
 
 
 # VPN
 
 todo: problematicno dodjeljivanje imena tailscale doda suffix `-1`, `-2`, itd ako dvaput upalis vm sa istim imenom (cak i ako prvo ugasis ovaj prije)
+- ima fix - Ephemeral - ali tek nakon sat vremena se makne sa tailscale
 
 Use tailscale. You can even host your own server with headscale
 
-todo: validate this
+todo: validate this, update for my new api
 - open tailscale web app
 - add device - linux server
     - set Reusable auth key - so multiple machines can join using it
