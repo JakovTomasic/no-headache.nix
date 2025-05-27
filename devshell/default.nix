@@ -1,9 +1,9 @@
+{ userConfigsFile, secretsDir }:
 let
   pkgs = import <nixpkgs> {};
-  configBuilder = config: (import ./base-configuration.nix { inherit pkgs config; });
+  configBuilder = config: (import ./base-configuration.nix { inherit pkgs config secretsDir; });
 
-  # User defined configurations
-  configs = import ./configs.nix {};
+  userConfigs = import userConfigsFile { inherit pkgs secretsDir; };
   # Generates nix configurations (effectively configuration.nix files)
   configurations = builtins.mapAttrs (name: value:
     configBuilder (pkgs.lib.evalModules {
@@ -16,7 +16,7 @@ let
         }
       ];
     }).config
-  ) configs;
+  ) userConfigs;
 
 
   # Scripts that run generated VMs

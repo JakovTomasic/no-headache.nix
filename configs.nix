@@ -1,4 +1,4 @@
-{ ... }:
+{ pkgs, secretsDir, ... }:
 {
   client = {
     custom.pythonScript = "/etc/client.py";
