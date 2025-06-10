@@ -3,6 +3,8 @@ import time
 import subprocess
 
 SERVER_IP = ""
+PORT = 5000
+LOG_FILE = '/home/nixy/log.txt'
 
 while SERVER_IP[0:4] != "100.":
     proc = subprocess.run(['tailscale', 'ip', '-4', 'server'], encoding='utf-8', stdout=subprocess.PIPE)
@@ -12,7 +14,8 @@ while SERVER_IP[0:4] != "100.":
     # SERVER_IP = '127.0.0.1'
     SERVER_IP = ip.split('\n')[0]
 
-PORT = 5000
+    with open(LOG_FILE, 'a') as f:
+        f.write(f"client init ip: {ip}")
 
 def main():
     while True:

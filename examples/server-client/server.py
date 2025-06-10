@@ -5,6 +5,9 @@ HOST = '0.0.0.0'  # Listen on all interfaces
 PORT = 5000       # Port to listen on
 LOG_FILE = '/home/nixy/log.txt'
 
+with open(LOG_FILE, 'a') as f:
+    f.write(f"successful init ${LOG_FILE}, ${PORT}\n")
+
 def handle_client(conn, addr):
     print(f"Connected by {addr}")
     with conn:

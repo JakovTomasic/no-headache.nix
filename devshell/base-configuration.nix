@@ -5,7 +5,11 @@
 { pkgs, config }:
 let
   lib = pkgs.lib;
-  userPkgs = config.nixos-config.environment.systemPackages;
+  userPkgs = let
+      c = config.nixos-config;
+      env = if c ? environment then c.environment else {};
+      sysPkgs = if env ? systemPackages then env.systemPackages else [];
+    in sysPkgs;
   tailscaleEnabled = config.tailscaleAuthKeyFile != null;
 in
 {
@@ -24,11 +28,15 @@ in
   systemd.services.script-at-boot = let
     tailscaleServiceOrNot = if tailscaleEnabled then [ "tailscaled.service" ] else [];
     tailscaleOrNot = if tailscaleEnabled then [ pkgs.tailscale ] else [];
+    logFile = "/home/${config.username}/script-at-boot.log";
   in {
     enable = true;
     script = ''
+      echo "Setting up tailscale" &>> ${logFile}
       # Make tailscale ephemeral
-      ${if tailscaleEnabled then "tailscaled -state=mem:" else ""}
+      ${if tailscaleEnabled then "tailscaled -state=mem: &>> ${logFile} || true" else ""}
+
+      echo "Setup done. Starting config.init.script" &>> ${logFile}
       ${config.init.script}
     '';
 
@@ -47,11 +55,14 @@ in
     path = userPkgs ++ tailscaleOrNot ++ (with pkgs; [ iproute2 coreutils ]);
 
     preStart = if config.tailscaleAuthKeyFile == null then "" else ''
-        echo "Waiting for Tailscale IP..."
-        while ! tailscale ip --4 | grep -qE '^100\.'; do
-        sleep 1
+        echo "" > ${logFile}
+        echo "Waiting for Tailscale IP..." &>> ${logFile}
+        while ! ${pkgs.tailscale}/bin/tailscale ip --4 | grep -qE '^100\.'; do
+          sleep 1
+          echo "Still waiting... Output:" &>> ${logFile}
+          ${pkgs.tailscale}/bin/tailscale ip --4 &>> ${logFile}
         done
-        echo "Tailscale is ready with IP: $(tailscale ip)"
+        echo "Tailscale is ready with IP: $(${pkgs.tailscale}/bin/tailscale ip)" &>> ${logFile}
         '';
   };
 

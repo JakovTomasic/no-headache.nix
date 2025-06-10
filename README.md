@@ -104,5 +104,7 @@ Tailscale automatically assigns ip adresses and hostnames (giving it suffix if t
 qcow2 je image
 - https://www.linux-kvm.org/page/Qcow2
 
+for debugging init.script run `systemctl` and `journalctl` inside the VM and `systemctl status script-at-boot` or `journalctl -u script-at-boot`
+
 
 
