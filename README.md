@@ -106,5 +106,7 @@ qcow2 je image
 
 for debugging init.script run `systemctl` and `journalctl` inside the VM and `systemctl status script-at-boot` or `journalctl -u script-at-boot`
 
+you can't use `~` in `init.script`
+- todo: implement alternative? Like `$NIXY` or `$HOME`
 
 

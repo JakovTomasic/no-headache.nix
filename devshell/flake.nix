@@ -26,8 +26,9 @@
       build = pkgs.writeShellScriptBin "buildVms" ''
         # Default values
         CONFIG_FILE="./configs.nix"
+        TRACE_OPTION=""
 
-        USAGE_MESSAGE="Usage: $0 [-c|--config <file>]"
+        USAGE_MESSAGE="Usage: $0 [-c|--config <file>] [--show-trace]"
 
         # Parse arguments
         while [[ "$#" -gt 0 ]]; do
@@ -35,6 +36,10 @@
             -c|--config)
               CONFIG_FILE="$2"
               shift 2
+              ;;
+            --show-trace)
+              TRACE_OPTION="--show-trace"
+              shift 1
               ;;
             -h|--help)
               echo $USAGE_MESSAGE
@@ -50,7 +55,7 @@
 
         echo "Using config file: $CONFIG_FILE"
 
-        nix-build ${myFiles}/default.nix --arg userConfigsFile "$CONFIG_FILE"
+        nix-build ${myFiles}/default.nix --arg userConfigsFile "$CONFIG_FILE" "$TRACE_OPTION"
       '';
       runAll = pkgs.writeShellScriptBin "runAllVms" ''
         ./result/bin/runAll

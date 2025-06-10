@@ -3,7 +3,7 @@
   options = {
     configName = lib.mkOption {
       type = lib.types.str;
-      description = "Name of the config defined in configs.nix. By default, this also defines netowrking.hostName";
+      description = "An uniqu name of the config defined in configs.nix with added index when count > 1. By default, this also defines netowrking.hostName";
     };
 
     username = lib.mkOption {
@@ -18,6 +18,12 @@
       description = "A file with Tailscale auth key value (and nothing else). Providing null means tealscale is diabled";
     };
 
+    count = lib.mkOption {
+      type = lib.types.int;
+      default = 1;
+      description = "Number of virtual machines to create";
+    };
+
     nixos-config = lib.mkOption {
       type = lib.types.attrs;
       default = {};
@@ -29,6 +35,18 @@
         type = lib.types.str;
         default = "";
         description = "A bash script that's executed only once - when the environment starts.";
+      };
+    };
+
+    # Options for internal use. Don't use them in your user configurations (configs.nix).
+    internal = {
+      baseConfigName = lib.mkOption {
+        type = lib.types.str;
+        description = "Base name of the config defined in configs.nix without added indexing";
+      };
+      index = lib.mkOption {
+        type = lib.types.number;
+        description = "Index of this machine. From 1 to count, including.";
       };
     };
   };

@@ -5,17 +5,37 @@ let
 
   userConfigs = import userConfigsFile { inherit pkgs; };
   # Generates nix configurations (effectively configuration.nix files)
-  configurations = builtins.mapAttrs (name: value:
-    configBuilder (pkgs.lib.evalModules {
-      modules = [
-        ./options.nix
-        value
+  configurations = builtins.listToAttrs (builtins.concatLists (builtins.attrValues (builtins.mapAttrs (name: value:
+    let
+      count = (value.count or 1);
+      configsReadyForBuilder = builtins.genList (i: 
+        let
+          configName = if count == 1 then name else "${name}-${builtins.toString (i+1)}";
+        in
         {
-          configName = name;
+          # Keep name to pass-on later. Otherwise this info will be lost.
+          name = configName;
+          # Build module to be passed into configBuilder
+          value = (pkgs.lib.evalModules {
+            modules = [
+              ./options.nix
+              value
+              {
+                configName = configName;
+                internal.baseConfigName = name;
+                internal.index = i+1;
+              }
+            ];
+          }).config;
         }
-      ];
-    }).config
-  ) userConfigs;
+      ) count;
+    in
+    # listToAttrs will convert list of name-value attrs to attr {name1 = value1, name2 = value2, ...}
+    builtins.map (c: {
+        name = c.name;
+        value = configBuilder c.value;
+    }) configsReadyForBuilder
+  ) userConfigs)));
 
 
   # Scripts that run generated VMs

@@ -11,6 +11,11 @@ let
       sysPkgs = if env ? systemPackages then env.systemPackages else [];
     in sysPkgs;
   tailscaleEnabled = config.tailscaleAuthKeyFile != null;
+  vmEnvVariables = {
+    VM_NAME = config.configName;
+    VM_INDEX = builtins.toString config.internal.index;
+    VM_BASE_NAME = config.internal.baseConfigName;
+  };
 in
 {
   # TODO: pin version
@@ -29,16 +34,21 @@ in
     tailscaleServiceOrNot = if tailscaleEnabled then [ "tailscaled.service" ] else [];
     tailscaleOrNot = if tailscaleEnabled then [ pkgs.tailscale ] else [];
     logFile = "/home/${config.username}/script-at-boot.log";
+    tailscaleSetupScript = ''
+      echo "Setting up tailscale" &>> ${logFile}
+      tailscaled -state=mem: &>> ${logFile} || true
+    '';
+    initScriptPath = pkgs.writeScript "init-script.sh" config.init.script;
   in {
     enable = true;
     script = ''
-      echo "Setting up tailscale" &>> ${logFile}
       # Make tailscale ephemeral
-      ${if tailscaleEnabled then "tailscaled -state=mem: &>> ${logFile} || true" else ""}
+      ${if tailscaleEnabled then tailscaleSetupScript else ""}
 
       echo "Setup done. Starting config.init.script" &>> ${logFile}
-      ${config.init.script}
+      source ${initScriptPath}
     '';
+      # ${config.init.script} # TODO: remove
 
     # TODO: re-enable this? Make python script that crashes every 5 ticks to test restarting?
     # serviceConfig = {
@@ -53,6 +63,9 @@ in
     # Manually add all binary files to path (otherwise no program will be available in the path)
     # TODO: can I remove iproute2 and coreutils?
     path = userPkgs ++ tailscaleOrNot ++ (with pkgs; [ iproute2 coreutils ]);
+
+    # Needs to be included separately because global env variables aren't initialized yet
+    environment = vmEnvVariables;
 
     preStart = if config.tailscaleAuthKeyFile == null then "" else ''
         echo "" > ${logFile}
@@ -107,6 +120,12 @@ in
   # virtualisation.qemu.options = [
   #   "-nic" "user,hostfwd=tcp::10022-:22"
   # ];
+
+  # TODO: Use lib.mkMerge in configs.nix, too
+  environment.variables = lib.mkMerge [
+    # Only define your new vars here
+    vmEnvVariables
+  ];
 
   # Optional: enable qemu-guest-agent
   services.qemuGuest.enable = lib.mkDefault true;
