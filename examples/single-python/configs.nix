@@ -2,6 +2,7 @@
 {
   python-code = {
     init.script = ''
+      # TODO: numpy won't work in this? Fix that
       python /etc/code.py
     '';
     # Example: you can define custom username.
