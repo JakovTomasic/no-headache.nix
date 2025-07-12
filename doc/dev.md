@@ -4,6 +4,12 @@
 These are some of my notes for commands and options used in the development of the project.
 
 
+## Changing devshell
+
+When you change anything from the dev shell you need to exit current shells and re-enter them. That'll trigger a rebuild.
+On a build, all files are copied to nix store and used there so changing e.g. default.nix won't take effect until you rebuild the shell.
+
+
 ## Basic run
 
 how to start a VM only using nix (no nixos host needed):
@@ -29,5 +35,14 @@ This builds VM configuration and by running it you create a image for persistent
 ## printFilesPath
 
 In the dev shell, command `printFilesPath` prints where in the nix store are all dev shell files.
+
+## SSH
+
+ssh into the vm by running on the host:
+```bash
+ssh -p 2222 nixy@localhost
+# change port and username to match the real usecase
+```
+
 
 

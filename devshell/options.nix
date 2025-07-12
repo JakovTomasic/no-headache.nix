@@ -18,6 +18,12 @@
       description = "A file with Tailscale auth key value (and nothing else). Providing null means tealscale is diabled";
     };
 
+    firstHostSshPort = lib.mkOption {
+      type = lib.types.nullOr lib.types.int;
+      default = null;
+      description = "If null, host cannot connect to the VM without VPN. This defines the first SSH port for this VM type. If count is greather than one then each instance will have the next int as it's SSH port. No two VMs can have the same port.";
+    };
+
     count = lib.mkOption {
       type = lib.types.int;
       default = 1;
@@ -47,6 +53,11 @@
       index = lib.mkOption {
         type = lib.types.number;
         description = "Index of this machine. From 1 to count, including.";
+      };
+      hostSshPort = lib.mkOption {
+        type = lib.types.nullOr lib.types.int;
+        default = null;
+        description = "If null, host cannot connect to the VM without VPN. This defines the SSH port host will forward to this VM. This is computed from firstHostSshPort and index.";
       };
     };
   };

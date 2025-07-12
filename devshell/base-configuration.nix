@@ -116,10 +116,14 @@ in
   virtualisation.memorySize = lib.mkDefault 1024;   # 1 GB RAM
   virtualisation.cores = lib.mkDefault 1;           # 1 CPU core
 
-  # # This explicitly tells QEMU to forward localhost:10022 on the host to port 22 inside the guest VM
-  # virtualisation.qemu.options = [
-  #   "-nic" "user,hostfwd=tcp::10022-:22"
-  # ];
+  # If host ssh port is defined, setup port forwarding so you can SSH into the VM from your host without VPN.
+  virtualisation.forwardPorts = if config.internal.hostSshPort == null then [] else [
+    {
+      from = "host";
+      host.port = config.internal.hostSshPort;
+      guest.port = 22;
+    }
+  ];
 
   # TODO: Use lib.mkMerge in configs.nix, too
   environment.variables = lib.mkMerge [

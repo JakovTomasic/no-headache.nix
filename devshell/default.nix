@@ -5,7 +5,7 @@ let
 
   userConfigs = import userConfigsFile { inherit pkgs; };
   # Generates nix configurations (effectively configuration.nix files)
-  configurations = builtins.listToAttrs (builtins.concatLists (builtins.attrValues (builtins.mapAttrs (name: value:
+  configurations = builtins.concatLists (builtins.attrValues (builtins.mapAttrs (name: value:
     let
       count = (value.count or 1);
       configsReadyForBuilder = builtins.genList (i: 
@@ -24,6 +24,7 @@ let
                 configName = configName;
                 internal.baseConfigName = name;
                 internal.index = i+1;
+                internal.hostSshPort = if value ? firstHostSshPort && value.firstHostSshPort != null then value.firstHostSshPort + i else null;
               }
             ];
           }).config;
@@ -34,8 +35,9 @@ let
     builtins.map (c: {
         name = c.name;
         value = configBuilder c.value;
+        pureConfig = c.value; # Original user config, with added internal values
     }) configsReadyForBuilder
-  ) userConfigs)));
+  ) userConfigs));
 
 
   # Scripts that run generated VMs
@@ -60,20 +62,37 @@ let
     )}
   '';
 
+  # SSH into a VM from the host
+  sshIntoVmScripts = pkgs.lib.foldl' pkgs.lib.mergeAttrs {} (builtins.map (c:
+    let scriptName = "ssh-into-${c.pureConfig.configName}"; in
+    {
+      "${scriptName}" = pkgs.writeShellScriptBin "${scriptName}" ''
+        if ${if c.pureConfig.firstHostSshPort == null then "true" else "false"}; then
+          echo "Error! VM ${c.pureConfig.configName} doesn't have SSH from host enabled. Please set firstHostSshPort option in your configs file."
+        else
+          echo "running: ssh -p ${builtins.toString c.pureConfig.internal.hostSshPort} \"${c.pureConfig.username}@localhost\""
+          ssh -p ${builtins.toString c.pureConfig.internal.hostSshPort} "${c.pureConfig.username}@localhost"
+        fi
+      '';
+    }
+  ) configurations);
+  sshIntoVmScriptPaths = builtins.attrValues sshIntoVmScripts;
+
+
   # Generate nixos virtual machines (effectively the same as running nixos-rebuild -- build-vm)
   # TODO: pin version - there is a specific way how to do this with flakes?
   nixosSystem = import <nixpkgs/nixos/lib/eval-config.nix>;
-  nixosMachines = builtins.attrValues (builtins.mapAttrs (name: c:
+  nixosMachines = builtins.map (c:
     {
-      name = name;
+      name = c.name;
       system = nixosSystem {
         system = "x86_64-linux";
         modules = [
-          c
+          c.value
         ];
       };
     }
-  ) configurations);
+  ) configurations;
   builtNixosMachinesList = builtins.map (m: m.vm-path) builtNixosMachinesListWithNames;
   builtNixosMachinesListWithNames = builtins.map (m: {
     name = m.name;
@@ -85,19 +104,21 @@ let
     name = "generated-vm-configurations";
     phases = [ "installPhase" ];
     installPhase = ''
-        mkdir -p $out
+      mkdir -p $out
       ${builtins.concatStringsSep "\n" (
-        builtins.attrValues (builtins.mapAttrs (vm-config-name: vm-config: ''
-          echo '${pkgs.lib.generators.toPretty {} vm-config}' > $out/configuration-${vm-config-name}.nix
+        builtins.map (vm-config: ''
+          echo '${pkgs.lib.generators.toPretty {} vm-config.value}' > $out/configuration-${vm-config.name}.nix
         '') configurations
-        ))}
+      )}
     '';
   };
-in
+
   # Run this generator only once and then have everything in the derivation output
-  pkgs.symlinkJoin {
+  rootResultDerivation = pkgs.symlinkJoin {
     # this'll be name of the output in the nix store
     name = "testnet-vms";
     # TODO: result/system je u outputu, ali samo za jedan machine jer se overwriteaju
-    paths = runVmScriptPaths ++ [ runAllVmsScript outputConfigFiles ] ++ builtNixosMachinesList;
-  }
+    paths = runVmScriptPaths ++ [ runAllVmsScript outputConfigFiles ] ++ sshIntoVmScriptPaths ++ builtNixosMachinesList;
+  };
+in
+  rootResultDerivation

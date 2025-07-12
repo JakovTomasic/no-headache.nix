@@ -88,6 +88,10 @@ For simple configs, the image is just around 10 MB big because `/nix/store` is s
 **Delete qcow2 file** when you change the configuration (before running the VM with different configuration).
 *Note*: commands for running VMs will print warning and remind you if you forget to remove qcow2 file.
 
+todo - background and windows mode
+- and explain username and password
+- or put this somewhere
+
 ### run individual vm
 
 todo - make custom command
@@ -112,35 +116,25 @@ todo - remove this?
 
 ## SSH
 
-todo: explain user doc and move other to dev doc
+When using SSH in a VPN use it normally.
+OpenSSH server is enabled by default.
 
-todo: not working
+To SSH into VM from your host machine without using VPN a port forwarding rule needs to be set to forward SSH connection from localhost to VM you want.
+That's supported in the configs file.
 
-among other configs, in configuration.nix add
-```nix
-# This explicitly tells QEMU to forward localhost:10022 on the host to port 22 inside the guest VM
-virtualisation.qemu.options = [
-    "-nic" "user,hostfwd=tcp::10022-:22"
-];
-```
+Just define the `firstHostSshPort` option (e.g. set it to 2222) and build and run the VMs.
 
-and run the VM. To check if it forwards run
-```bash
-grep -i 'hostfwd' ./result/bin/run-*-vm
-# output should be: user,hostfwd=tcp::10022-:22 \
-```
+When a VM is running you can SSH into it by running appropriate command in the generated `results/bin/` directory.
+For example, run `./result/bin/ssh-into-yourVmName`.
 
-ssh into the vm by running on the host:
-```bash
-ssh root@localhost -p 10022
-# todo: not working
-```
+If you get error: "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!" delete that known host from `~/.ssh/known_hosts` (you probably want to delete all hosts that begin with `[localhost]:some-port` there)
 
 
 # QEMU
 
 Virsh doesn't work because nix doesn't use it.
 List all QEMU processes `ps aux | grep qemu` to see what VMs are running.
+- todo: how to list processes?
 
 
 # VPN
