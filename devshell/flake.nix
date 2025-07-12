@@ -55,14 +55,16 @@
 
         echo "Using config file: $CONFIG_FILE"
 
-        nix-build ${myFiles}/default.nix --arg userConfigsFile "$CONFIG_FILE" "$TRACE_OPTION"
+        nix-build ${myFiles}/default.nix --arg userConfigsFile $CONFIG_FILE $TRACE_OPTION
       '';
       runAll = pkgs.writeShellScriptBin "runAllVms" ''
         ./result/bin/runAll
       '';
       buildAndRun = pkgs.writeShellScriptBin "buildAndRun" ''
         buildVms && runAllVms
+        # TODO: maybe remove this. Too trivial and not flexible enough
       '';
+      # TODO: make command to run single VM (by its name) - integrate with other run commands e.g. run --all
     in {
       devShells.default = pkgs.mkShell {
         # myFiles $out/bin will be automatically added to the path
