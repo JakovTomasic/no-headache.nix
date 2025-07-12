@@ -44,5 +44,10 @@ ssh -p 2222 nixy@localhost
 # change port and username to match the real usecase
 ```
 
+# Other tips
+
+`./result/bin/run-*-vm` has a lot of options. See that if needed.
+
+for debugging init.script run `systemctl` and `journalctl` inside the VM and `systemctl status script-at-boot` or `journalctl -u script-at-boot`
 
 

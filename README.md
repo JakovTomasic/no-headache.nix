@@ -92,21 +92,30 @@ todo - background and windows mode
 - and explain username and password
 - or put this somewhere
 
-### run individual vm
+### Run individual VM
 
 todo - make custom command
 
-for now use `./result/bin/vm-name` (just the vm name. Not run-vm-name-vm)
+Use `./result/bin/vm-name` to run the VM (replace it with your vm name. Note: write just the vm name. Don't run the available `run-vm-name-vm` command).
+There are several options:
+```bash
+# Open a window of the VM:
+./result/bin/vm-name
 
-todo - explain options/params
+# Open it directly in the current terminal:
+# To exit the VM just shutdown the VM and you'll return to your current terminal.
+./result/bin/vm-name -nographic
+
+# Run in background without opening any terminal
+./result/bin/vm-name -display none &
+```
 
 ### runAllVms
 
-todo - join this command with run? E.g. run --all
+Running `runAllVms` runs all VMs
+- todo
 
-Running `runAllVms`
-
-todo - explain options/params
+All arguments'll be forwarded to script for running each individual VM. See [Run individual vm](#run-individual-vm) to see options.
 
 ### buildAndRun
 
@@ -132,12 +141,16 @@ If you get error: "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!" delete that
 
 # QEMU
 
+todo: napisi client doc i ostalo makni u dev doc
+
 Virsh doesn't work because nix doesn't use it.
 List all QEMU processes `ps aux | grep qemu` to see what VMs are running.
-- todo: how to list processes?
+- todo: how to list processes? Write a script, if not anything else. (and ensure grep (package gnugrep) is available in the dev shell?)
 
 
 # VPN
+
+todo: napisi client doc i ostalo makni u dev doc
 
 todo: problematicno dodjeljivanje imena tailscale doda suffix `-1`, `-2`, itd ako dvaput upalis vm sa istim imenom (cak i ako prvo ugasis ovaj prije)
 - ima fix - Ephemeral - ali tek nakon sat vremena se makne sa tailscale
@@ -168,16 +181,9 @@ You can also find the Tailscale IP for other devices on your network by adding t
 Tailscale automatically assigns ip adresses and hostnames (giving it suffix if two are the same)
 
 
-# Other notes
-
-`./result/bin/run-*-vm` ima puno opcija. Baci oko ako zatreba
-
-qcow2 je image
-- https://www.linux-kvm.org/page/Qcow2
-
-for debugging init.script run `systemctl` and `journalctl` inside the VM and `systemctl status script-at-boot` or `journalctl -u script-at-boot`
+# Other tips
 
 you can't use `~` in `init.script`
-- todo: implement alternative? Like `$NIXY` or `$HOME`
+- todo: document that. Implement alternative? Like `$NIXY` or `$HOME`
 
 

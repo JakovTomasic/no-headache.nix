@@ -49,7 +49,7 @@ let
         fi
         echo "Running ${machine.name}"
         # TODO: run in background, don't block execution - provide options for that (as parameters to this script?)
-        ${machine.vm-path}/bin/run-${machine.name}-vm &
+        ${machine.vm-path}/bin/run-${machine.name}-vm $@ &
       '';
     }
   ) builtNixosMachinesListWithNames);
@@ -58,7 +58,7 @@ let
   # A script that runs all VMs at the same time
   runAllVmsScript = pkgs.writeShellScriptBin "runAll" ''
     ${builtins.concatStringsSep "\n" (
-        builtins.attrValues (builtins.mapAttrs (name: value: "${value}/bin/${name}") runVmScripts)
+        builtins.attrValues (builtins.mapAttrs (name: value: "${value}/bin/${name} $@") runVmScripts)
     )}
   '';
 

@@ -58,17 +58,16 @@
         nix-build ${myFiles}/default.nix --arg userConfigsFile $CONFIG_FILE $TRACE_OPTION
       '';
       runAll = pkgs.writeShellScriptBin "runAllVms" ''
-        ./result/bin/runAll
+        ./result/bin/runAll $@
       '';
-      buildAndRun = pkgs.writeShellScriptBin "buildAndRun" ''
-        buildVms && runAllVms
-        # TODO: maybe remove this. Too trivial and not flexible enough
+      sshInto = pkgs.writeShellScriptBin "sshInto" ''
+        ./result/bin/ssh-into-$1
       '';
       # TODO: make command to run single VM (by its name) - integrate with other run commands e.g. run --all
     in {
       devShells.default = pkgs.mkShell {
         # myFiles $out/bin will be automatically added to the path
-        packages = [ myFiles build runAll buildAndRun printFilesPath ];
+        packages = [ myFiles build runAll printFilesPath sshInto ];
 
         shellHook = ''
           echo "Dev shell loaded."
