@@ -2,40 +2,117 @@
 todo: write instructions for what you do and how to recreate it
 
 This is user documentation. For developer documentation see **TODO**.
+This documentation also serves as a featureset that needs to be tested and maintained.
 
 **TODO** write user documentation
 - update everything when api is well formed
 
 
+# An overview
+
+todo: write short overview to get the whole high level context
+
+todo: write tl;dr for setting-up everything
+
 # Setup
 
-In `secrets/` directory cresate a file named `tailscale.authkey` (or change configuration to use different name and path)
-- the file should just cointain the reusable tailscale key
+## Install Nix
+
+First, install Nix package manager on your machine
+
+todo
+
+## Download this repo
+
+todo - don't move it?
+
+## Tailscale
+
+Optionally, setup tailscale server to connect VMs to.
+This project has native support for tailscale with easy configuration.
+
+In `secrets/` directory create a file named `tailscale.authkey` (or change `tailscaleAuthKeyFile` in `configs.nix` to use different name and path)
+- the file should just cointain a reusable tailscale key
+
+todo - use it in config? Or not needed. How to config tailscale?
 
 
-# Basic run
+# Usage
 
-how to start a VM only using nix (no nixos host needed):
-```bash
-# Build the VM
-nix run nixpkgs#nixos-rebuild -- build-vm -I nixos-config=./configuration.nix
+The next steps explain how to use this project.
 
-# Run it
-./result/bin/run-*-vm
-# Or to open it directly in the current terminal:
-./result/bin/run-*-vm -nographic
-# to shutdown just shutdown the VM and you'll return to your current terminal
-# Or run in background without opening any terminal
-./result/bin/run-*-vm -display none &
-```
-Running the virtual machine will create a `nixos.qcow2` file in the current directory. **Delete this file** when you change the configuration.
+todo
 
-This is just a basic example. See running scripts to see what other options are used here.
+## Enter the development shell
 
-This builds VM configuration and by running it you create a image for persistent storage. Image is just around 10 MB big because `/nix/store` is shared with the host.
+All commands and environment is available within the dev shell.
+To enter the dev shell just run the `enterdevshell.sh` command (e.g. from the project's root directory run `./enterdevshell.sh`).
+
+To exit the dev shell just close the terminal or run `exit`.
+
+todo - how to check if in the dev shell?
 
 
-# SSH
+## Example configurations
+
+By convention, all VMs' configurations are contained in a single `configs.nix` file.
+
+You can write custom `configs.nix` files (you can also change the file name) or use example configs provided in the `examples` directory.
+
+## Commands
+
+todo - prepared commands
+
+todo - should all this be single command e.g. vmnix run --all
+
+### buildVms
+
+Running `buildVms` builds all virtual machine configurations.
+
+By default, the command uses `configs.nix` file from the current directory.
+To specify custom path to the configs.nix file run e.g. `buildVms -c examples/single-python/configs.nix` or `buildVms -c ../configs-with-custom-name.nix`.
+
+You can also run `buildVms -h` or `buildVms --help` for (very) short overview.
+
+This command will create symlink to nix store named `result` in the current directory.
+You can leave that symlink. You'll never need to use it directly, but you may if curious.
+- todo: explain result dir? Not here but somewhere.
+
+### Running VMs
+
+There are few ways to run VMs from built configurations.
+
+Generally, by running a VM a image for persistent storage `name_of_the_machine.qcow2` will be created in the current directory.
+For simple configs, the image is just around 10 MB big because `/nix/store` is shared with the host.
+
+**Delete qcow2 file** when you change the configuration (before running the VM with different configuration).
+*Note*: commands for running VMs will print warning and remind you if you forget to remove qcow2 file.
+
+### run individual vm
+
+todo - make custom command
+
+for now use `./result/bin/vm-name` (just the vm name. Not run-vm-name-vm)
+
+todo - explain options/params
+
+### runAllVms
+
+todo - join this command with run? E.g. run --all
+
+Running `runAllVms`
+
+todo - explain options/params
+
+### buildAndRun
+
+todo - remove this?
+
+
+
+## SSH
+
+todo: explain user doc and move other to dev doc
 
 todo: not working
 
