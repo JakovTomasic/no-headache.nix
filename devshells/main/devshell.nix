@@ -47,7 +47,7 @@ let
 
     echo "Using config file: $CONFIG_FILE"
 
-    nix-build ${myFiles}/default.nix --arg userConfigsFile $CONFIG_FILE $TRACE_OPTION
+    nix build -f ${myFiles}/default.nix --arg userConfigsFile $CONFIG_FILE $TRACE_OPTION
     '';
     runAll = pkgs.writeShellScriptBin "runAllVms" ''
       ./result/bin/runAll $@

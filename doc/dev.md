@@ -17,7 +17,9 @@ The main devshell is the devshell used for developing this project itself as wel
 how to start a VM only using nix (no nixos host needed):
 ```bash
 # Build the VM
-nix run nixpkgs#nixos-rebuild -- build-vm -I nixos-config=./configuration.nix
+nix build -f ./configuration.nix
+# This doesn't work outside nixos: nix-build ${myFiles}/default.nix
+
 
 # Run it
 ./result/bin/run-*-vm
