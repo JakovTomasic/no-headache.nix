@@ -1,5 +1,7 @@
 
-todo: write instructions for what you do and how to recreate it
+TODO: project name? Naming is hard :(
+
+A nix-build wrapper with simple API for configuring and running many virutal machines.
 
 This is user documentation. For developer documentation see **TODO**.
 This documentation also serves as a featureset that needs to be tested and maintained.
@@ -7,6 +9,8 @@ This documentation also serves as a featureset that needs to be tested and maint
 **TODO** write user documentation
 - update everything when api is well formed
 
+todo - write more in-detail documentation for configuring VMs. Here or in separate file in the doc.
+- mention [this](https://search.nixos.org/options)
 
 # An overview
 
@@ -125,6 +129,8 @@ todo - remove this?
 
 ## SSH
 
+todo - add example ssh key for exapmles/ so its easier to just try them
+
 When using SSH in a VPN use it normally.
 OpenSSH server is enabled by default.
 
@@ -179,6 +185,27 @@ You can also find the Tailscale IP for other devices on your network by adding t
 - [source](https://tailscale.com/kb/1080/cli#ip)
 
 Tailscale automatically assigns ip adresses and hostnames (giving it suffix if two are the same)
+
+
+# devshells
+
+todo: napisi client doc i dev doc
+
+all in `devshells/` must be complete and runnable without flake.nix, except the main and tailscale shell
+
+
+# python
+
+todo: napisi client doc i dev doc
+
+
+# Storage cleanup
+
+todo - delete old stuff from nix store - gc
+
+# Examples
+
+todo - explain briefly and link to examples
 
 
 # Other tips

@@ -48,6 +48,12 @@ ssh -p 2222 nixy@localhost
 # change port and username to match the real usecase
 ```
 
+## Testing
+
+todo - write tests - like examples but automated
+- automatically shut down VM and check if test fails if everything is shutdown (automatically)
+
+
 # Other tips
 
 `./result/bin/run-*-vm` has a lot of options. See that if needed.
