@@ -9,6 +9,8 @@ These are some of my notes for commands and options used in the development of t
 When you change anything from the dev shell you need to exit current shells and re-enter them. That'll trigger a rebuild.
 On a build, all files are copied to nix store and used there so changing e.g. default.nix won't take effect until you rebuild the shell.
 
+The main devshell is the devshell used for developing this project itself as well as changing and using custom configuration.
+
 
 ## Basic run
 
@@ -49,5 +51,6 @@ ssh -p 2222 nixy@localhost
 `./result/bin/run-*-vm` has a lot of options. See that if needed.
 
 for debugging init.script run `systemctl` and `journalctl` inside the VM and `systemctl status script-at-boot` or `journalctl -u script-at-boot`
+- todo - errors in this script are common and this also needs to be in the user doc
 
 
