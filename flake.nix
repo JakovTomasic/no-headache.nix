@@ -9,6 +9,7 @@
       pkgs = import nixpkgs { inherit system; };
     in {
       devShells.default = import ./devshells/main/devshell.nix { inherit pkgs; };
+      devShells.tailscale = import ./devshells/tailscale/devshell.nix { inherit pkgs; };
     });
 }
 

@@ -1,7 +1,7 @@
 
 How to connect to tailscale:
 
-For each terminal where you need sudo enter in this directory and run `nix develop` if you don't have tailscale installed globally on your system.
+For each terminal where you need sudo run `nix develop ./#tailscale` in the project root directory if you don't have tailscale installed globally on your system.
 
 Run: `sudo tailscaled`
 
