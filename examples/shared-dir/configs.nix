@@ -1,6 +1,6 @@
 { pkgs, ... }:
 {
-  python-code = {
+  shared-dirs = {
     init.script = ''
       echo "this is a shared file. This was generated inside the VM." > /mnt/shared/generated-from-vm
     '';
