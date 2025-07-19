@@ -1,8 +1,10 @@
 {
   description = "Main flake for whole project and with a dev shell encapsulating needed files and executables";
 
-  inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
-  inputs.flake-utils.url = "github:numtide/flake-utils";
+  inputs = {
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
+    flake-utils.url = "github:numtide/flake-utils";
+  };
 
   outputs = { self, nixpkgs, flake-utils }: flake-utils.lib.eachDefaultSystem (system:
     let

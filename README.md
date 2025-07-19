@@ -17,6 +17,7 @@ todo - write more in-detail documentation for configuring VMs. Here or in separa
 todo: write short overview to get the whole high level context
 
 todo: write tl;dr for setting-up everything
+- mention `configs.nix` files
 
 # Setup
 
@@ -187,16 +188,46 @@ You can also find the Tailscale IP for other devices on your network by adding t
 Tailscale automatically assigns ip adresses and hostnames (giving it suffix if two are the same)
 
 
-# devshells
+# Compatibility environments (compat envs)
 
-todo: napisi client doc i dev doc
+Compatibility environments are more advanced feature for what can't be easily supported directly in `configs.nix` files.
+The primary usecase is building FHS-compatible environments using nix `pkgs.buildFHSEnv` function.
 
-all in `devshells/` must be complete and runnable without flake.nix, except the main and tailscale shell
+You can write your own compat envs and modify existing ones.
+All compat envs in `compat-envs/` directory should be complete and runnable without `flake.nix`.
+Follow the general patterns used in `python-fhs.nix`.
 
+Compatibility environments can also be built and tested outside of the VM.
+To build the compat env just run `nix build -f path/to/compat/env.nix` and then enter interactive shell with `./result/bin/<name of the env>`
+To exit the compat env shell just close the terminal or run `exit`.
 
-# python
+_Warning_: activating FHS compat env in VM hides original `/etc` directory and overwrites it with another content (and probably some others, for compatibility reasons). That means you won't be able to access the files inside the original `/etc` dir.
+So try not to use `/etc` dirs or other directories (e.g. don't use `environment.etc."code.py".source = ./code.py;`. Use custom `copyToHome` option instead).
 
-todo: napisi client doc i dev doc
+## Python-FHS compat env
+
+As python is expected to be most common usecase it's already supported in the project.
+A `compat-envs/python-fhs.nix` file fully defines the compatibility environment for most python projects.
+It also serves as an example for other projects.
+
+Python FHS support greatly simplifies Python development and adds support for common commands like `pip install`.
+
+You may modify and/or copy this file as needed.
+
+### Usage
+
+To include FHS environment in the VM follow these steps (in 'python' example, see 'python-fhs-env'):
+1. add `(import ../../compat-envs/python-fhs.nix { inherit pkgs; })` in `environment.systemPackages` (you may need to change the relative path or use absolute path)
+2. in `init.script` initialize and run python env:
+    - initialize: `python-fhs -c 'init-python-venv -r requirements.txt'` (you may omit `-r requirements.txt`)
+    - (if not using requirements.txt) run other setup commands like `python-fhs -c 'pip install numpy'`
+    - run wanted command inside the environment `python-fhs -c 'source venv/bin/activate && <your command here>'` (e.g. `python-fhs -c 'source venv/bin/activate && python code.py'`)
+
+These same commands can be run manually inside the VM.
+In interactive VM shell you can also enter interactive python-fhs environment by using the name of the env (just run `python-fhs`).
+
+Compatibility environments can also be built and tested outside of the VM.
+To build the compat env on the host OS (outside of a VM) just run ``nix build -f compat-envs/python-fhs.nix`` and then enter interactive shell with `./result/bin/python-fhs`.
 
 
 # Storage cleanup
@@ -207,10 +238,5 @@ todo - delete old stuff from nix store - gc
 
 todo - explain briefly and link to examples
 
-
-# Other tips
-
-you can't use `~` in `init.script`
-- todo: document that. Implement alternative? Like `$NIXY` or `$HOME`
 
 

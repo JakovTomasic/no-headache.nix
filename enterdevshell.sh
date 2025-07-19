@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Enter the nix dev shell
+# Enter the main (default) nix dev shell
 # You may run this script from anywhere.
 
 # Get the directory of this script

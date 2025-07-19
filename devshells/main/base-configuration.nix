@@ -33,7 +33,8 @@ in
   systemd.services.script-at-boot = let
     tailscaleServiceOrNot = if tailscaleEnabled then [ "tailscaled.service" ] else [];
     tailscaleOrNot = if tailscaleEnabled then [ pkgs.tailscale ] else [];
-    logFile = "/home/${config.username}/script-at-boot.log";
+    homeDir = "/home/${config.username}";
+    logFile = "${homeDir}/script-at-boot.log";
     tailscaleSetupScript = ''
       echo "Setting up tailscale" &>> ${logFile}
       tailscaled -state=mem: &>> ${logFile} || true
@@ -50,15 +51,19 @@ in
     '';
       # ${config.init.script} # TODO: remove
 
-    # TODO: re-enable this? Make python script that crashes every 5 ticks to test restarting?
-    # serviceConfig = {
-    #   ExecStart = "${pkgs.python3}/bin/python ${config.custom.pythonScript}";
-    #   Restart = "always";
-    # };
+    serviceConfig = {
+      Type = "oneshot";               # Runs once and exits
+      RemainAfterExit = false;        # Consider service active after it runs
+      User = "${config.username}";
+      WorkingDirectory = homeDir;     # Optional default directory
+      Environment = "HOME=${homeDir}";      # Needed for pip/venv
+      # StandardOutput = "journal+console"; # Useful for debugging
+      # StandardError = "journal+console";
+    };
 
     wantedBy = [ "multi-user.target" ];
-    after = [ "network-online.target" ] ++ tailscaleServiceOrNot;
-    requires = [ "network-online.target" ] ++ tailscaleServiceOrNot;
+    after = [ "local-fs.target" "network-online.target" ] ++ tailscaleServiceOrNot;
+    requires = [ "local-fs.target" "network-online.target" ] ++ tailscaleServiceOrNot;
 
     # Manually add all binary files to path (otherwise no program will be available in the path)
     # TODO: can I remove iproute2 and coreutils?
@@ -130,6 +135,13 @@ in
     # Only define your new vars here
     vmEnvVariables
   ];
+
+  nix = {
+    package = pkgs.nix;
+    extraOptions = ''
+      experimental-features = nix-command flakes
+    '';
+  };
 
   # Optional: enable qemu-guest-agent
   services.qemuGuest.enable = lib.mkDefault true;
