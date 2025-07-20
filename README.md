@@ -18,6 +18,7 @@ todo: write short overview to get the whole high level context
 
 todo: write tl;dr for setting-up everything
 - mention `configs.nix` files
+- mention default username and pass somewhere (here and in config doc)
 
 # Setup
 
@@ -214,6 +215,10 @@ Python FHS support greatly simplifies Python development and adds support for co
 
 You may modify and/or copy this file as needed.
 
+As shown in `python-shared-venv` python example, you can have venv in the persistent shared directory.
+That's useful when rebuilding VMs and resetting all VM storage as venv setup and package installation can take a long time.
+This is a recommended approach if you expect VM config changes and reseting it's storage, especially in developing configs.nix.
+
 ### Usage
 
 To include FHS environment in the VM follow these steps (in 'python' example, see 'python-fhs-env'):
@@ -229,6 +234,14 @@ In interactive VM shell you can also enter interactive python-fhs environment by
 Compatibility environments can also be built and tested outside of the VM.
 To build the compat env on the host OS (outside of a VM) just run ``nix build -f compat-envs/python-fhs.nix`` and then enter interactive shell with `./result/bin/python-fhs`.
 
+# Shared directory
+
+With `virtualisation.sharedDirectories` option you can mount a host machine directory into VM directory, creating a shared directory.
+
+You can also use shared directories a persistent storage that persists even configuration changes and VM storage deletions.
+This is especially useful when creating VM config or generally when changes and storage deletions are frequent.
+
+See `Python-FHS` and `python-shared-venv` for a complete example.
 
 # Storage cleanup
 

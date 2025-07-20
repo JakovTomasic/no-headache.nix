@@ -7,15 +7,16 @@ in
   # Example of a problem with python code and why solutions below are necessary.
   python-error = {
     init.script = ''
-      # this doesn't work because required libraries aren't installed
-      # TODO: output error to shared dir OR print journalctl?
-      python /etc/code.py
+      # This doesn't work because required libraries aren't installed
+      # Run it in the VM manually to see the errors.
+      python ~/code.py
     '';
+    copyToHome = {
+      # Copy the script into /home/nixy/code.py
+      "code.py" = ./code.py;
+    };
     firstHostSshPort = 2100;
     nixos-config = {
-      # Copy the script into /etc/code.py
-      environment.etc."code.py".source = ./code.py;
-
       environment.systemPackages = with pkgs; [ python3 ];
 
       users.users.nixy.openssh.authorizedKeys.keys = [ sshKey ];
@@ -26,13 +27,14 @@ in
   # This has the fastest build as it doesn't have to install packages from pip every time.
   python-native-nix = {
     init.script = ''
-      python /etc/code.py
+      python ~/code.py
     '';
     firstHostSshPort = 2200;
+    copyToHome = {
+      # Copy the script into /home/nixy/code.py
+      "code.py" = ./code.py;
+    };
     nixos-config = {
-      # Copy the script into /etc/code.py
-      environment.etc."code.py".source = ./code.py;
-
       # See shared directory example for more details
       virtualisation.sharedDirectories = {
         exampleSharedDir = {
@@ -62,23 +64,20 @@ in
   # The initialization is a bit slower
   python-fhs-env = {
     init.script = ''
-      # TODO: this is temporary. Remove it
-      # TODO: explain somewhere that this files copied to home (etc but thats hidden from the user?) are immutable and to create mutable copy just run cp code.py code2.py where code2.py is now a mutable copy.
-      cp -P /etc/code.py ~/code.py
-      cp -P /etc/requirements.txt ~/requirements.txt
-
-      # Note: initialization may take few dozen seconds. Check shared status.txt to validate intialization is running.
+      # Note: initialization may take few minutes. Check shared status.txt to validate intialization is running.
+      # You can also run 'systemctl status script-at-boot' in the VM to check if this script is still running or if it crashed.
       echo "venv init start" > /mnt/shared/status.txt
       python-fhs -c 'init-python-venv -r requirements.txt'
       echo "venv init done. Starting the script." >> /mnt/shared/status.txt
       python-fhs -c 'source venv/bin/activate && python code.py'
     '';
+    copyToHome = {
+      # Copy the script and requirements into VM home directory
+      "code.py" = ./code.py;
+      "requirements.txt" = ./requirements.txt;
+    };
     firstHostSshPort = 2300;
     nixos-config = {
-      # Copy the script and requirements into VM directory /etc
-      environment.etc."code.py".source = ./code.py;
-      environment.etc."requirements.txt".source = ./requirements.txt;
-
       # See shared directory example for more details
       virtualisation.sharedDirectories = {
         exampleSharedDir = {
@@ -100,6 +99,47 @@ in
     };
   };
 
-  # TODO: fhs-env with shared venv dir (recommended???) - init venv in shared dir so its persistant and reinit takes less time. Also document that
+  # Like python-fhs-env, but uses persistent shared directory for the venv.
+  # Useful when rebuilding VMs and resetting all VM storage as venv setup and package installation can take a long time.
+  # This is a recommended approach if you expect VM config changes and reseting it's storage, especially in developing configs.nix.
+  python-shared-venv = {
+    init.script = ''
+      # The main difference from other fhs solution: create venv in the shared dir
+      cd /mnt/shared/
+
+      # Note: initialization may take few minutes (only the first time for the shared venv approach). Check shared status.txt to validate intialization is running.
+      # You can also run 'systemctl status script-at-boot' in the VM to check if this script is still running or if it crashed.
+      echo "venv init start" > status.txt
+      python-fhs -c 'init-python-venv -r ~/requirements.txt'
+      echo "venv init done. Starting the script." >> status.txt
+      python-fhs -c 'source venv/bin/activate && python ~/code.py'
+    '';
+    copyToHome = {
+      # Copy the script and requirements into VM home directory
+      "code.py" = ./code.py;
+      "requirements.txt" = ./requirements.txt;
+    };
+    firstHostSshPort = 2400;
+    nixos-config = {
+      # See shared directory example for more details
+      virtualisation.sharedDirectories = {
+        exampleSharedDir = {
+          # Important: you need to create this directory before starting this VM
+          # use: mkdir -p /tmp/my-nixos-vms-shared/python-shared-venv
+          source = "/tmp/my-nixos-vms-shared/python-shared-venv";
+          # Absolute path to virtual machine path
+          target = "/mnt/shared";
+        };
+      };
+
+      environment.systemPackages = with pkgs; [
+        # Adding python FHS environment for pip install support.
+        # See 'Python-FHS compat env' in README.md
+        (import ../../compat-envs/python-fhs.nix { inherit pkgs; })
+      ];
+
+      users.users.nixy.openssh.authorizedKeys.keys = [ sshKey ];
+    };
+  };
 }
 
