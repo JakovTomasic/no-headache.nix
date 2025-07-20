@@ -1,5 +1,6 @@
 { userConfigsFile }:
 let
+  # TODO: somehow pass pkgs into here? Run this from flake.nix?
   pkgs = import <nixpkgs> {};
   configBuilder = config: (import ./base-configuration.nix { inherit pkgs config; });
 
@@ -70,8 +71,9 @@ let
         if ${if c.pureConfig.firstHostSshPort == null then "true" else "false"}; then
           echo "Error! VM ${c.pureConfig.configName} doesn't have SSH from host enabled. Please set firstHostSshPort option in your configs file."
         else
-          echo "running: ssh -p ${builtins.toString c.pureConfig.internal.hostSshPort} \"${c.pureConfig.username}@localhost\""
-          ssh -p ${builtins.toString c.pureConfig.internal.hostSshPort} "${c.pureConfig.username}@localhost"
+          # Don't save the VM to user known hosts because when running other VM on the same port it'll throw an error that the VM is different and you'd have to remove it from known hosts file.
+          echo "running: ssh -p ${builtins.toString c.pureConfig.internal.hostSshPort} \"${c.pureConfig.username}@localhost\" -o \"UserKnownHostsFile=/dev/null\""
+          ssh -p ${builtins.toString c.pureConfig.internal.hostSshPort} "${c.pureConfig.username}@localhost" -o "UserKnownHostsFile=/dev/null"
         fi
       '';
     }
