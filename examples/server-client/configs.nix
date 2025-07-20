@@ -13,12 +13,13 @@ in
     init.script = ''
       # TODO: remove logging
       echo "asdf" &> /home/nixy/output2.txt
-      python /etc/client.py &> /home/nixy/output.txt
+      python ~/client.py &> /home/nixy/output.txt
     '';
+    copyToHome = {
+      # Copy the script into ~/client.py
+      "client.py" = ./client.py;
+    };
     nixos-config = {
-      # Deploy the script into /etc/client.py
-      environment.etc."client.py".source = ./client.py;
-
       users.users.nixy.openssh.authorizedKeys.keys = [ sshkey ];
       environment.systemPackages = with pkgs; [ python3 ];
     };
@@ -28,12 +29,13 @@ in
     init.script = ''
       # TODO: remove logging
       echo "asdf" &> /home/nixy/output2.txt
-      python /etc/server.py &> /home/nixy/output.txt
+      python ~/server.py &> /home/nixy/output.txt
     '';
+    copyToHome = {
+      # Copy the script into ~/server.py
+      "server.py" = ./server.py;
+    };
     nixos-config = {
-      # Deploy the script into /etc/server.py
-      environment.etc."server.py".source = ./server.py;
-
       users.users.nixy.openssh.authorizedKeys.keys = [ sshkey ];
       environment.systemPackages = with pkgs; [ python3 ];
 

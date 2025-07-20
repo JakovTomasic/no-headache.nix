@@ -76,7 +76,7 @@ todo - should all this be single command e.g. vmnix run --all
 Running `buildVms` builds all virtual machine configurations.
 
 By default, the command uses `configs.nix` file from the current directory.
-To specify custom path to the configs.nix file run e.g. `buildVms -c examples/single-python/configs.nix` or `buildVms -c ../configs-with-custom-name.nix`.
+To specify custom path to the configs.nix file run e.g. `buildVms -c examples/python/configs.nix` or `buildVms -c ../configs-with-custom-name.nix`.
 
 You can also run `buildVms -h` or `buildVms --help` for (very) short overview.
 
