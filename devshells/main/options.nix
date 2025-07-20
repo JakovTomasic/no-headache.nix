@@ -44,6 +44,21 @@
       };
     };
 
+    copyToHome = lib.mkOption {
+      type = lib.types.attrsOf lib.types.path;
+      default = {};
+      description = ''
+        Copies files and directories from host machine to desired location in the VM, relative to user home directory.
+        This copies the files to the nix store and in VM creates symlinks to the nix store copy.
+        That means **the files are read-only**. To modify the files just copy them in the VM (e.g. you can add in your init.script 'cp code.py code2.py' where code.py is symlink to a read-only file and code2.py is a normal read/write file).
+        In the attr set, left (key) is destination string path (in qotes) in the VM relative to the home directory, right (value) is a path (without quotes) relative to the configs.nix file in which the path is written or absolute path. There may be any number of files or directories.
+      '';
+      example = {
+        "code.py" = ./python/code.py;
+        "config/settings.json" = /etc/second-file-path/settings.json;
+      };
+    };
+
     # Options for internal use. Don't use them in your user configurations (configs.nix).
     internal = {
       baseConfigName = lib.mkOption {
@@ -76,3 +91,4 @@
   #   ];
   # };
 }
+

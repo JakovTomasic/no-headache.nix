@@ -1,0 +1,1 @@
+This file is deep in directories. It should also be copied to the VM.

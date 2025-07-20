@@ -1,0 +1,2 @@
+This is a single file.
+It'll be copied to the VM.

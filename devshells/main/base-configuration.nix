@@ -16,6 +16,7 @@ let
     VM_INDEX = builtins.toString config.internal.index;
     VM_BASE_NAME = config.internal.baseConfigName;
   };
+  copyToHomeTmpEtcDirName = "copied-from-host-for-home-dir";
 in
 {
   # TODO: pin version
@@ -26,8 +27,24 @@ in
   boot.loader.systemd-boot.enable = lib.mkDefault true;
   boot.loader.efi.canTouchEfiVariables = lib.mkDefault true;
 
-  # Minimal set of packages
-  environment.systemPackages = userPkgs ++ (with pkgs; [ vim htop openssh ]);
+  environment = {
+    # Minimal set of packages
+    systemPackages = userPkgs ++ (with pkgs; [ vim htop openssh ]);
+
+    # TODO: Use lib.mkMerge in configs.nix, too
+    variables = lib.mkMerge [
+      # Only define your new vars here
+      vmEnvVariables
+    ];
+
+    etc = let
+      # Copy to home doesn't exist so I'll use environment.<name>.source to copy it to env and then I'll copy that symlink from env to home in the init script.
+      copyToEnv = lib.attrValues (lib.mapAttrs (destPath: srcPath:
+        { "${copyToHomeTmpEtcDirName}/${destPath}".source = srcPath; }
+      ) config.copyToHome);
+    in lib.mkMerge copyToEnv;
+  };
+
 
   # Enable a systemd service to run a script (provided by machine config)
   systemd.services.script-at-boot = let
@@ -46,10 +63,12 @@ in
       # Make tailscale ephemeral
       ${if tailscaleEnabled then tailscaleSetupScript else ""}
 
+      # Copy all symlinks from temporary etc dir to desired home destinations.
+      cp -Pr /etc/${copyToHomeTmpEtcDirName}/* ~
+
       echo "Setup done. Starting config.init.script" &>> ${logFile}
       source ${initScriptPath}
     '';
-      # ${config.init.script} # TODO: remove
 
     serviceConfig = {
       Type = "oneshot";               # Runs once and exits
@@ -128,12 +147,6 @@ in
       host.port = config.internal.hostSshPort;
       guest.port = 22;
     }
-  ];
-
-  # TODO: Use lib.mkMerge in configs.nix, too
-  environment.variables = lib.mkMerge [
-    # Only define your new vars here
-    vmEnvVariables
   ];
 
   nix = {
