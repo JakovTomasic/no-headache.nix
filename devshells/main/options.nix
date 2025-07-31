@@ -3,7 +3,7 @@
   options = {
     configName = lib.mkOption {
       type = lib.types.str;
-      description = "An uniqu name of the config defined in configs.nix with added index when count > 1. By default, this also defines netowrking.hostName";
+      description = "An unique name of the config defined in configs.nix with added index when count > 1. By default, this also defines netowrking.hostName";
     };
 
     username = lib.mkOption {
@@ -15,7 +15,7 @@
     tailscaleAuthKeyFile = lib.mkOption {
       type = lib.types.nullOr lib.types.path;
       default = null;
-      description = "A file with Tailscale auth key value (and nothing else). Providing null means tealscale is diabled";
+      description = "A file with Tailscale auth key value (and nothing else). Providing null means tealscale is disabled.";
     };
 
     firstHostSshPort = lib.mkOption {
@@ -51,7 +51,7 @@
         Copies files and directories from host machine to desired location in the VM, relative to user home directory.
         This copies the files to the nix store and in VM creates symlinks to the nix store copy.
         That means **the files are read-only**. To modify the files just copy them in the VM (e.g. you can add in your init.script 'cp code.py code2.py' where code.py is symlink to a read-only file and code2.py is a normal read/write file).
-        In the attr set, left (key) is destination string path (in qotes) in the VM relative to the home directory, right (value) is a path (without quotes) relative to the configs.nix file in which the path is written or absolute path. There may be any number of files or directories.
+        In the attr set, left (key) is destination string path (in quotes) in the VM relative to the home directory, right (value) is a path (without quotes) relative to the configs.nix file in which the path is written or absolute path. There may be any number of files or directories.
       '';
       example = {
         "code.py" = ./python/code.py;

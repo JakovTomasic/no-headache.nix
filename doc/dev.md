@@ -23,7 +23,6 @@ how to start a VM only using nix (no nixos host needed):
 nix build -f ./configuration.nix
 # This doesn't work outside nixos: nix-build ${myFiles}/default.nix
 
-
 # Run it
 ./result/bin/run-*-vm
 # Or to open it directly in the current terminal:
@@ -68,8 +67,7 @@ Generally, building or installing anything nix-related in the VM is not recommen
 
 `./result/bin/run-*-vm` has a lot of options. See that if needed.
 
-for debugging init.script run `systemctl` and `journalctl` inside the VM and `systemctl status script-at-boot` or `journalctl -u script-at-boot`
-- todo - errors in this script are common and this also needs to be in the user doc
+for debugging init.script run `systemctl status script-at-boot` or `journalctl -u script-at-boot` inside the VM.
 - always check full log with journalctl. systemctl crops only part of the log and it might be very misleading
 
 
