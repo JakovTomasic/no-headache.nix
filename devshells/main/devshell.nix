@@ -47,7 +47,7 @@ let
 
     echo "Using config file: $CONFIG_FILE"
 
-    nix build -f ${myFiles}/default.nix --arg userConfigsFile $CONFIG_FILE $TRACE_OPTION
+    nix --extra-experimental-features nix-command --extra-experimental-features flakes build -f ${myFiles}/default.nix --arg userConfigsFile $CONFIG_FILE $TRACE_OPTION
     '';
     runAll = pkgs.writeShellScriptBin "runAllVms" ''
       ./result/bin/runAll $@

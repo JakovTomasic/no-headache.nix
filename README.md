@@ -37,17 +37,19 @@ VM.Nix (TODO: project name) is a `nix-build` command wrapper with simple API for
 
 # Setup
 
-todo: the shorter the better. For other options then provide another sub-section in this setup section
-
-## Install Nix
-
-First, install Nix package manager on your machine
-
-todo
-
-## Download this repo
-
-todo - don't move it?
+Setup steps. Tested on Ubuntu 24.04 LTS
+- open terminal
+- install Nix package manager [official instructions](https://nixos.org/download/)
+    - run the provided command and follow instructions
+        - install curl if needed (on Ubuntu: `sudo apt install curl`)
+        - Both Single-user installation and Multi-user installation should work. For a bit easier usage install Multi-user installation (and Single-user for a bit faster install)
+    - Nix should be installed. Run `nix --version` to verify
+        - for Single-user installation you may need to run `. /home/ubuntu/.nix-profile/etc/profile.d/nix.sh` before using nix (as instructed after installation)
+- download this project and `cd` into this project's root directory
+- run `./enterdevshell.sh`
+- build a configuration: `buildVms -c examples/vm-count-option/configs.nix`
+- run all VMs with `runAllVms`
+- that's it. Close the VMs and write your own configurations. Happy configuring!
 
 ## Tailscale
 
@@ -55,9 +57,7 @@ Optionally, setup tailscale server to connect VMs to.
 This project has native support for tailscale with easy configuration.
 
 In `secrets/` directory create a file named `tailscale.authkey` (or change `tailscaleAuthKeyFile` in `configs.nix` to use different name and path)
-- the file should just cointain a reusable tailscale key
-
-todo - use it in config? Or not needed. How to config tailscale?
+The file should just cointain a reusable tailscale key.
 
 
 # Usage
@@ -210,7 +210,8 @@ All compat envs in `compat-envs/` directory should be complete and runnable with
 Follow the general patterns used in `python-fhs.nix`.
 
 Compatibility environments can also be built and tested outside of the VM.
-To build the compat env just run `nix build -f path/to/compat/env.nix` and then enter interactive shell with `./result/bin/<name of the env>`
+To build the compat env just run `nix --extra-experimental-features nix-command build -f path/to/compat/env.nix` and then enter interactive shell with `./result/bin/<name of the env>`.
+(If you get get error when running result bin file "bwrap: setting up uid map: Permission denied" you can enter the shell as root user via `sudo ./result/bin/<name of the env>`, which is not ideal but should work.)
 To exit the compat env shell just close the terminal or run `exit`.
 
 _Warning_: activating FHS compat env in VM hides original `/etc` directory and overwrites it with another content (and probably some others, for compatibility reasons). That means you won't be able to access the files inside the original `/etc` dir.
@@ -243,7 +244,7 @@ These same commands can be run manually inside the VM.
 In interactive VM shell you can also enter interactive python-fhs environment by using the name of the env (just run `python-fhs`).
 
 Compatibility environments can also be built and tested outside of the VM.
-To build the compat env on the host OS (outside of a VM) just run ``nix build -f compat-envs/python-fhs.nix`` and then enter interactive shell with `./result/bin/python-fhs`.
+To build the compat env on the host OS (outside of a VM) just run ``nix --extra-experimental-features nix-command build -f compat-envs/python-fhs.nix`` and then enter interactive shell with `./result/bin/python-fhs`.
 
 # Shared directory
 
