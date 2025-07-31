@@ -1,4 +1,6 @@
 { pkgs, ... }:
+let
+in
 {
   shared-dirs = {
     init.script = ''

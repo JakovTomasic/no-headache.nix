@@ -1,4 +1,6 @@
 { pkgs, ... }:
+let
+in
 {
   copy-to-home = {
     copyToHome = {
