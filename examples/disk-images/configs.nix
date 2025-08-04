@@ -24,7 +24,7 @@ in
     };
     # Disk images won't use options defined in nixos-config-virt, but directly run VMs will.
     nixos-config-virt = {
-      # Shared directory and other virtualisation. options must be defined here in nixos-config-virt
+      # Shared directory and other virtualisation. Options must be defined here in nixos-config-virt
       virtualisation.sharedDirectories = {
         exampleSharedDir = {
           # Absolute path to host OS path of dir to be shared
@@ -46,7 +46,6 @@ in
         MY_ENV_VAR = "My VM-only custom env variable";
       };
 
-      # Options defined here overwrite options in the nixos-config.
       # Use pkgs.lib.mkForce to overwrite default value (intead of concatinating it)
       # See active keys by running: cat /etc/ssh/authorized_keys.d/nixy
       users.users.nixy.openssh.authorizedKeys.keys = pkgs.lib.mkForce [ vmSshkey ];
@@ -92,5 +91,8 @@ in
   # Count is 0 so no disk image will be created
   noImage = {
     count = 0;
+    diskImage = {
+      format = "qcow2";
+    };
   };
 }

@@ -1,9 +1,10 @@
 
 TODO: project name? Naming is hard :(
 
+
 # An overview
 
-VM.Nix (TODO: project name) is a development and testing environment powered by the Nix package manager, allowing you to define and run declarative, reproducible, and isolated NixOS virtual machines (VMs) with minimal setup. It’s ideal for projects that require per-VM configuration, quick and easy VMs setup, or clean state environments, all without the overhead of containers or cloud infrastructure.
+VM.Nix (TODO: project name) is a development and testing environment powered by the Nix package manager, allowing you to define and run declarative, reproducible, and isolated NixOS virtual machines (VMs) and disk images with minimal setup. It’s ideal for projects that require per-VM configuration, quick and easy VMs setup, or clean state environments, all without the overhead of containers or cloud infrastructure.
 
 Key Features:
 
@@ -14,6 +15,7 @@ Key Features:
 - Persistent shared directories – share files between host and VM.
 - Compatibility environments – supports complex setups (e.g., Python with FHS and pip install).
 - SSH & port forwarding – connect to VMs via SSH from host or over VPN.
+- Build full disk images – for running in any hypervisor or on bare metal.
 - Over 20,000 standrad NixOS options – use any NixOS options to configure your VMs.
 
 This is user documentation. For developer documentation see [dev doc](./doc/dev.md).
@@ -118,6 +120,12 @@ For simple configs, the image is just around 10 MB big because `/nix/store` is s
 
 Default username for the VM is `nixy` and the password is `nixos`, unless changed in your `configs.nix`.
 
+Each machine has defined following environment variables:
+- *MACHINE_BASE_NAME* – Base name of the machine. Equals to the name in the `configs.nix` file.
+- *MACHINE_INDEX* – Index of this machine in the list of virtual machines with the same configuration (only important if `count` option is used).
+- *MACHINE_NAME* – Full name of the machine. Equals to the name in the `configs.nix` file and index if `count` option is used.
+- *MACHINE_TYPE* – "image" if the machine is build as disk image and "virtual" if it's build as a virtual machine.
+
 ### Run individual VM
 
 Use `./result/bin/vm-name` to run the VM (replace it with your vm name. Note: write just the vm name. Don't run the available `run-vm-name-vm` command).
@@ -139,6 +147,24 @@ There are several options:
 Running `runAllVms` runs all VMs from the last built `configs.nix`.
 
 All arguments'll be forwarded to script for running each individual VM. See [Run individual vm](#run-individual-vm) to see options.
+
+### Build disk images
+
+Run the build command with `--images` argument to, along VMs, build the full disk images, too.
+Full command example: `buildVms -c examples/disk-images/configs.nix --images`
+
+About disk images:
+- Image will be built only for configurations with defined `diskImage` option.
+- This project doesn't implement method to run images. Run them in supported hypervisors or on bare metal.
+- For configuring images see option `diskImage` in [configuration instructions](TODO).
+  - TODO: add link here
+- Image generator ignores `count` option. It'll generate single image for each configuration with defined `diskImage` option.
+  - That means environment variable *MACHINE_INDEX* is always 1 and *MACHINE_NAME* is equal to *MACHINE_BASE_NAME*.
+- Minimal *raw* image (e.g. the ones from the *disk-images* example) is 3.1 GB large. Image file size for *qcow2* format is 1.7 GB and *qcow2-compressed* format 550 MB.
+- The generated images will remain in the nix store until you clean it with `nix store gc` (see [Storage cleanup](#storage-cleanup)).
+
+Symlink to built image will be generated in the `result` directory.
+Copy it somewhere else to use it. Also see the image file permissions and file owner.
 
 
 ## SSH
@@ -266,7 +292,7 @@ To remove old unused files from the nix store:
 
 todo - how to write configs.nix - maybe put this in another file, just for configurations
 
-For each setup (combination of virtual machines) write a single `configs.nix` file.
+For each setup (combination of machines) write a single `configs.nix` file.
 The configuration is managed in nix programming language.
 See [Nix language basics](https://nix.dev/tutorials/nix-language) to familiarize yourself with the syntax.
 Or just read the examples and figure stuff out on the way.
@@ -345,6 +371,8 @@ For full config example, see `vm-count-option` example.
 Used for enabling SSH from the host machine, as explained in the README.
 If null, host cannot connect to the VM without VPN. This defines the first SSH port for this VM type. If count option is greather than one then each instance will have the next number as its SSH port. No two VM instances can have the same port.
 
+**Note**: this option doesn't work for disk images. Use hypervisor features to support this usecase.
+
 Default: `null`, SSH from the host machine isn't possible
 
 Example:
@@ -361,7 +389,9 @@ It'll run in the background and you don't have to login into the VM user to star
 The script is run as the user.
 This is useful options for automatins scripts.
 
-NixOS virtual machine will start systemd service that runs the script and finishes or crashes with the script.
+You can use provided environment variables in this script.
+
+NixOS (virtual) machine will start systemd service that runs the script and finishes or crashes with the script.
 To see systemd service status run `systemctl status script-at-boot`.
 If error happens or if you use echo inside the init script, run `journalctl -u script-at-boot` to show the full low.
 
@@ -373,6 +403,7 @@ init.script = ''
   echo "init script start"
   cp ~/my_log_out.txt ~/my_log_out.txt.old
   echo "the script started" > ~/my_log_out.txt
+  echo "$MACHINE_TYPE" > ~/machine_type.txt
 '';
 ```
 
@@ -397,10 +428,34 @@ copyToHome = {
 
 For full config example, see `copy-to-home` example.
 
+## diskImage
+
+With this option you can configure what disk image will be generated.
+Set the option to null to disable making a disk image for this machine/configuration.
+Otherwise, set parameters for [make-disk-image.nix](https://github.com/NixOS/nixpkgs/blob/master/nixos/lib/make-disk-image.nix) (read all possible parameters and values in first curly braces `{ ... }`).
+
+This option ignores count option meaning only one image per configuration will be built.
+**Note**: the disk image won't be built unless appropriate built flag is used when building the configs.
+
+If configuring this option (if it isn't null), the `format` parameter must be defined.
+
+Default: `null`, disk images won't be generated.
+
+Example:
+```nix
+diskImage = {
+  format = "qcow2";
+  additionalSpace = "512M";
+  # any other make-disk-image.nix options
+};
+```
+
+For full config example, see `disk-images` example.
+
 ## nixos-config
 
 For everything else, use this option.
-The `nixos-config` option lets you define whatever standard NixOS configurations you'd like, including NixOS options for virtual machines (see [virtualisation.](https://search.nixos.org/options?from=0&size=50&sort=relevance&type=packages&query=virtualisation.) options).
+The `nixos-config` option lets you define whatever standard NixOS configurations you'd like.
 You can search all NixOS options [here](https://search.nixos.org/options).
 The value of the option is attribute set with same syntax and options as standard NixOS configuration.nix file.
 
@@ -419,6 +474,8 @@ nixos-config = {
   environment.systemPackages = with pkgs; [ python3 vim ];
 };
 ```
+
+**Warning**: don't define [virtualisation](https://search.nixos.org/options?sort=relevance&type=options&query=virtualisation) options here. See [nixos-config-virt](#nixos-config-virt) option. But if building only VMs (without the `diskImage` option or `--images` build argument) virtualisation options can be normally used in the `nixos-config`. But for consistency you can use nixos-config-virt.
 
 The following options are some standard NixOS options that you might find useful.
 
@@ -444,36 +501,6 @@ nixos-config = {
 };
 ```
 
-### virtualisation.sharedDirectories
-
-Mounts defined host machine directory into defined VM directory.
-Multiple shared directories can be defined.
-The contents of this directory are permanent and will remain on the host OS even after shutting down the VM.
-This can be useful if you need permanent storage, while rebuilding and resetting VMs often.
-It's also faster than `copyToHome` option and uses less storage.
-
-**Important**: host machine directory needs to be created manually or VM will fail when you try to run it.
-
-Example:
-```nix
-nixos-config = {
-  # ...
-  virtualisation.sharedDirectories = {
-    # Any name. Multiple shared directories can be here.
-    exampleSharedDir = {
-      # Absolute path to host OS path of dir to be shared
-      # Important: you need to create this directory before starting this VM
-      # use: mkdir -p /tmp/my-nixos-vms-shared/shared-dir-example
-      source = "/tmp/my-nixos-vms-shared/shared-dir-example";
-      # Absolute path to virtual machine path
-      target = "/mnt/shared";
-    };
-  };
-};
-```
-
-For full config example, see `shared-dir` example.
-
 ### Disable OpenSSH
 
 OpenSSH is turned on by default, as it'll be common usecase and I prefer to SSH into a VM instead of accessing it directly through window.
@@ -491,6 +518,9 @@ nixos-config = {
 To add public SSH key to your VM generate it and put it in the `users.users.<your username>.openssh.authorizedKeys.keys` list.
 While doing this you also may or may not want to disable OpenSSH password authentication to force authentication only with the key.
 
+Similarly, you can use `users.users.<name>.openssh.authorizedKeys.keyFiles` list to reference public key files, without inlining the keys as text in the config file.
+Use absolute paths or paths relative to the current file where the path is written in.
+
 Example:
 ```nix
 nixos-config = {
@@ -498,6 +528,9 @@ nixos-config = {
   users.users.nixy.openssh.authorizedKeys.keys = [
     # You probably want to generate your own SSH key and put it here. Don't use this one.
     "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC5UeLggeVy8fX4dui4qGklKMbSTtKPfvDWE2ivoWxuGaCKkCyLKbNM+S/mzLUsHi2h9jCGNZOoXB3II8BNkIqwHImBeUgjE/tdP86Fy80+ZTrmwN2Cah7Gx5Oeqy0vcN3NKsAt0+Ey6XfFl8IdFPYQJ71jkDjcyVy/45isSgAwmhTP+guQwVUe9A5ZLXzu6pYYwQaTfyixEcxMiepOcCntE4L1CWHNiBwDmEGu+tN1yxEiz30wWsqpM/VLOM/XsohyQLQl/r5aEOfpjvg1Q8qNkN+RUkr9cnXoGntDz+AHb0bCt6Lvfv0FZuTFHWWQi8NKMLluedchDzOs4WeJs6fPmuGq339eEaKHluadGeFHHWormfMCwTMy+zPgdGGwF7ZOkjpw6QcCkEVmJrWLc4Qbqjnaie3lkqIq2DO6EF7sF+6fCk9FgvyvKz0dCAnqFnKfhyHOogcb+DnC79Tm90jScH4vUWvXXHaSjHcdTPw51n13InCXGFbZUFJrUcOElF2q08TL3n7vONThY+/J/FRSg0f/8ZKsC1Vmb9j0nVv0iF3fxCu9HfggTq+mLZCDxPEzxl89O11MuPHknps1Be6S0CDGO7lKf69anppjTs970T/jPCapxB4/FjZ+kdNzHtW84uaWiEQbzjdWisIrxETZAFCJ8le1lUtFCcdbWfh8Mw== ssh key for local nixos VMs"
+  ];
+  users.users.nixy.openssh.authorizedKeys.keys = [
+    ../example_key.pub
   ];
   # Uncomment if you want this (the default is true):
   # services.openssh.settings.PasswordAuthentication = true;
@@ -521,6 +554,79 @@ For full config example, see `server-client` example.
 You'll never learn all of the options.
 Search options [here](https://search.nixos.org/options).
 Also consult the official [NixOS wiki](https://wiki.nixos.org/).
+
+## nixos-config-virt
+
+This option similar to `nixos-config`, but is used only for virtual machines and is ignored when building a disk image.
+Values from `nixos-config` and `nixos-config-virt` are combined for VM builds.
+
+It's used mainly for any [virtualisation](https://search.nixos.org/options?sort=relevance&type=options&query=virtualisation) options because they cannot be defined in the `nixos-config` option.
+It's required only for avoiding avoiding `virtualisation.` options' errors when building disk images.
+
+**Note**: if building only VMs (without the `diskImage` option or `--images` build argument) virtualisation options can be normally used in the `nixos-config`. But for consistency you can use nixos-config-virt.
+
+If you wish to overwrite value and ignore the original nixos-config value use `pkgs.lib.mkForce` (see examples below).
+
+Default: `{}`, empty attribute set. No additional options.
+
+Example:
+```nix
+nixos-config = {
+  # Some options for both VM and disk image.
+};
+nixos-config-virt = {
+  # Define virtualisation options, if you want
+  virtualisation.memorySize = 1024;   # 1 GB RAM
+  virtualisation.cores = 1;           # 1 CPU core
+  virtualisation.sharedDirectories = {
+    exampleSharedDir = {
+      source = "/tmp/my-nixos-vms-shared/disk-images-example";
+      target = "/mnt/shared";
+    };
+  };
+
+  # Besides packages in nixos-config, also install lolcat in virtual machines
+  environment.systemPackages = with pkgs; [ lolcat ];
+
+  # Use pkgs.lib.mkForce to overwrite default value (intead of concatinating it)
+  # This effectively deleted ssh key provided in nixos-config
+  users.users.nixy.openssh.authorizedKeys.keys = pkgs.lib.mkForce [ ];
+};
+```
+
+For full config example, see `disk-images` example.
+
+The following are some standard NixOS virtualisation options that you might find useful.
+
+### virtualisation.sharedDirectories
+
+Mounts defined host machine directory into defined VM directory.
+Multiple shared directories can be defined.
+The contents of this directory are permanent and will remain on the host OS even after shutting down the VM.
+This can be useful if you need permanent storage, while rebuilding and resetting VMs often.
+It's also faster than `copyToHome` option and uses less storage.
+
+**Important**: host machine directory needs to be created manually or VM will fail when you try to run it.
+
+Example:
+```nix
+nixos-config-virt = {
+  # ...
+  virtualisation.sharedDirectories = {
+    # Any name. Multiple shared directories can be here.
+    exampleSharedDir = {
+      # Absolute path to host OS path of dir to be shared
+      # Important: you need to create this directory before starting this VM
+      # use: mkdir -p /tmp/my-nixos-vms-shared/shared-dir-example
+      source = "/tmp/my-nixos-vms-shared/shared-dir-example";
+      # Absolute path to virtual machine path
+      target = "/mnt/shared";
+    };
+  };
+};
+```
+
+For full config example, see `shared-dir` example.
 
 
 
