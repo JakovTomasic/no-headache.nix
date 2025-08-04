@@ -2,40 +2,78 @@
 # This file contains default values. They should all have lib.mkDefault to allow overwrites (don't add lib.mkDefault for types that can be joined automatically, like lists)
 
 # config type is defined in options.nix. It has all the option values
-{ pkgs, config }:
+# if forDiskImage is true the configuration is for full disk image. Otherwise it's for VM.
+{ pkgs, config, forDiskImage }:
 let
   lib = pkgs.lib;
+
+  virtConfigOrNot = if forDiskImage then {} else config.nixos-config-virt;
+
   userPkgs = let
-      c = config.nixos-config;
-      env = if c ? environment then c.environment else {};
-      sysPkgs = if env ? systemPackages then env.systemPackages else [];
-    in sysPkgs;
+      base = config.nixos-config;
+      baseEnv = if base ? environment then base.environment else {};
+      baseSysPkgs = if baseEnv ? systemPackages then baseEnv.systemPackages else [];
+      vm = virtConfigOrNot;
+      vmEnv = if vm ? environment then vm.environment else {};
+      vmSysPkgs = if vmEnv ? systemPackages then vmEnv.systemPackages else [];
+    in baseSysPkgs ++ vmSysPkgs;
   tailscaleEnabled = config.tailscaleAuthKeyFile != null;
-  vmEnvVariables = {
-    VM_NAME = config.configName;
-    VM_INDEX = builtins.toString config.internal.index;
-    VM_BASE_NAME = config.internal.baseConfigName;
+  # Disk image name shouldn't have -index suffix because they ignore count
+  configName = if forDiskImage then config.internal.baseConfigName else config.configName;
+  envVariables = {
+    MACHINE_NAME = configName;
+    MACHINE_INDEX = builtins.toString config.internal.index;
+    MACHINE_BASE_NAME = config.internal.baseConfigName;
+    MACHINE_TYPE = if forDiskImage then "image" else "virtual";
   };
   copyToHomeTmpEtcDirName = "copied-from-host-for-home-dir";
+
+  # If the worng one is included the boot image won't be able to mount
+  qemuImport = if forDiskImage then
+    "${pkgs.path}/nixos/modules/profiles/qemu-guest.nix" # required for running full disk image with qemu
+  else
+    "${pkgs.path}/nixos/modules/virtualisation/qemu-vm.nix";
+
+  # Virtualisation options don't work in disk images and build error will be thrown if they're defined
+  virtualisationOptions = if forDiskImage then {} else {
+    # Resource limits for VM (used by qemu-vm module)
+    virtualisation.memorySize = lib.mkDefault 1024;   # 1 GB RAM
+    virtualisation.cores = lib.mkDefault 1;           # 1 CPU core
+
+    # If host ssh port is defined, setup port forwarding so you can SSH into the VM from your host without VPN.
+    virtualisation.forwardPorts = if config.internal.hostSshPort == null then [] else [
+      {
+        from = "host";
+        host.port = config.internal.hostSshPort;
+        guest.port = 22;
+      }
+    ];
+  };
 in
 {
-  # TODO: pin version
-  imports = [ config.nixos-config <nixpkgs/nixos/modules/virtualisation/qemu-vm.nix>];
+  imports = [
+    config.nixos-config
+    virtConfigOrNot
+    qemuImport
+    virtualisationOptions
+  ];
 
-  # Basic system settings
   boot.loader.grub.device = lib.mkDefault "/dev/vda";
-  boot.loader.systemd-boot.enable = lib.mkDefault true;
-  boot.loader.efi.canTouchEfiVariables = lib.mkDefault true;
+  # Required for disk image:
+  fileSystems."/" = {
+    device = "/dev/disk/by-label/nixos";
+    fsType = "ext4";
+    autoResize = true;
+  };
+
+  # Don't show configuration selector. Just boot into the only configuration.
+  boot.loader.timeout = lib.mkDefault 0;
 
   environment = {
     # Minimal set of packages
     systemPackages = userPkgs ++ (with pkgs; [ vim htop openssh ]);
 
-    # TODO: Use lib.mkMerge in configs.nix, too
-    variables = lib.mkMerge [
-      # Only define your new vars here
-      vmEnvVariables
-    ];
+    variables = envVariables;
 
     etc = let
       # Copy to home doesn't exist so I'll use environment.<name>.source to copy it to env and then I'll copy that symlink from env to home in the init script.
@@ -89,7 +127,7 @@ in
     path = userPkgs ++ tailscaleOrNot ++ (with pkgs; [ iproute2 coreutils ]);
 
     # Needs to be included separately because global env variables aren't initialized yet
-    environment = vmEnvVariables;
+    environment = envVariables;
 
     preStart = if config.tailscaleAuthKeyFile == null then "" else ''
         echo "" > ${logFile}
@@ -113,7 +151,7 @@ in
       allowedUDPPorts = [ ];
       enable = lib.mkDefault true;
     };
-    hostName = lib.mkDefault config.configName;
+    hostName = lib.mkDefault configName;
   };
 
   # Enable OpenSSH server
@@ -135,19 +173,6 @@ in
     initialPassword = lib.mkDefault "nixos";
     extraGroups = [ "wheel" ];
   };
-
-  # Resource limits for VM (used by qemu-vm module)
-  virtualisation.memorySize = lib.mkDefault 1024;   # 1 GB RAM
-  virtualisation.cores = lib.mkDefault 1;           # 1 CPU core
-
-  # If host ssh port is defined, setup port forwarding so you can SSH into the VM from your host without VPN.
-  virtualisation.forwardPorts = if config.internal.hostSshPort == null then [] else [
-    {
-      from = "host";
-      host.port = config.internal.hostSshPort;
-      guest.port = 22;
-    }
-  ];
 
   nix = {
     package = pkgs.nix;

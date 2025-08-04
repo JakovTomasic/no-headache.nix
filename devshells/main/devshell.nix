@@ -1,4 +1,4 @@
-{ pkgs } :
+{ pkgs, system } :
 let
   # Define a derivation that includes your files
   myFiles = pkgs.stdenv.mkDerivation {
@@ -20,7 +20,9 @@ let
     CONFIG_FILE="./configs.nix"
     TRACE_OPTION=""
 
-    USAGE_MESSAGE="Usage: $0 [-c|--config <file>] [--show-trace]"
+    USAGE_MESSAGE="Usage: $0 [-c|--config <file>] [--images] [--show-trace]"
+
+    GENERATE_DISK_IMAGES="false"
 
     # Parse arguments
     while [[ "$#" -gt 0 ]]; do
@@ -28,6 +30,10 @@ let
         -c|--config)
           CONFIG_FILE="$2"
           shift 2
+        ;;
+        --images)
+          GENERATE_DISK_IMAGES="true"
+          shift 1
         ;;
         --show-trace)
           TRACE_OPTION="--show-trace"
@@ -47,7 +53,7 @@ let
 
     echo "Using config file: $CONFIG_FILE"
 
-    nix --extra-experimental-features nix-command --extra-experimental-features flakes build -f ${myFiles}/default.nix --arg userConfigsFile $CONFIG_FILE $TRACE_OPTION
+    nix --extra-experimental-features nix-command --extra-experimental-features flakes build -f ${myFiles}/default.nix --arg userConfigsFile $CONFIG_FILE --arg generateDiskImages $GENERATE_DISK_IMAGES --argstr system "${system}" $TRACE_OPTION
     '';
     runAll = pkgs.writeShellScriptBin "runAllVms" ''
       ./result/bin/runAll $@

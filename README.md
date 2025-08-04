@@ -96,15 +96,15 @@ You can also run `buildVms -h` or `buildVms --help` for (very) short overview.
 This command will create symlink to nix store named `result` in the current directory (the `result` is practically a new created directory).
 You can leave that symlink. You'll never need to use it directly, but you may if curious.
 The result directory contains all built outputs with all configurations and executable files. All executable files are located in `result/bin/` directory.
-Every time the VMs are built, the results symlink is overwritten with the new results.
+Every time the VMs are built, the result symlink is overwritten with the new results.
 
 Build outputs persist in the nix store even after you delete the result symlink. See [Storage cleanup](#storage-cleanup) section for how to remove old files.
 That means you can have and use multiple results. E.g. you can:
-- build VM from `configs1.nix`. The `results` symlink will be created
-- rename it to results1 so it doesn't get overwritten (run `mv results results1`)
+- build VM from `configs1.nix`. The `result` symlink will be created
+- rename it to result1 so it doesn't get overwritten (run `mv result result1`)
 - build VM again, but use `configs2.nix`
-- optionally, rename new results, too. For consistency (`mv results results2`)
-- you now have two results symlink directories. Each for separate configs.
+- optionally, rename new result, too. For consistency (`mv result result2`)
+- you now have two result symlink directories. Each for separate configs.
 
 ### Running VMs
 
@@ -152,7 +152,7 @@ Full example of such `configs.nix` is provided in the `ssh-from-host` example.
 
 Just define the `firstHostSshPort` option (e.g. set it to 2222) and build and run the VMs.
 
-When a VM is running you can SSH into it by running appropriate command in the generated `results/bin/` directory.
+When a VM is running you can SSH into it by running appropriate command in the generated `result/bin/` directory.
 For example, run `./result/bin/ssh-into-yourVmName`.
 
 If you get error: "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!" delete that known host from `~/.ssh/known_hosts` (you probably want to delete all hosts that begin with `[localhost]:some-port` there). That error shouldn't happen if using only the `./result/bin/ssh-into-yourVmName` scripts.
@@ -258,7 +258,7 @@ See `Python-FHS` and `python-shared-venv` for a complete example.
 # Storage cleanup
 
 To remove old unused files from the nix store:
-- optionally, first remove the results symlink if you wish to delete those files, too
+- optionally, first remove the result symlink if you wish to delete those files, too (all nix store files/dirs that have symlinks point to them won't be deleted)
 - run nix store garbage collector `nix store gc` (it may take few minutes to complete)
 - old files, build results and unused packages will be deleted
 

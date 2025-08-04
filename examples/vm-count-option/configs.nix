@@ -14,12 +14,14 @@ let
     # yq shouldn't work anywhere because it's installed in diabled flat VM
     echo "a: 1" | yq '.a' &> /home/nixy/yq-output.txt || true
 
-    # Print the unique name of this VM
-    echo "$VM_NAME" > /home/nixy/vm_name.txt
+    # Print the unique name of this machine
+    echo "$MACHINE_NAME" > /home/nixy/machine_name.txt
     # Print the index of this VM within VMs of the same type
-    echo "$VM_INDEX" > /home/nixy/vm_index.txt
-    # Print the base name of the VM (the one used in this config)
-    echo "$VM_BASE_NAME" > /home/nixy/vm_base_name.txt
+    echo "$MACHINE_INDEX" > /home/nixy/machine_index.txt
+    # Print the base name of the machine
+    echo "$MACHINE_BASE_NAME" > /home/nixy/machine_base_name.txt
+    # Print the type of the machine
+    echo "$MACHINE_TYPE" > /home/nixy/machine_type.txt
     # You can use these environment variables in all your bash scripts in any VM
   '';
 in

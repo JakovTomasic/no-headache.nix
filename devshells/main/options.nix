@@ -3,7 +3,7 @@
   options = {
     configName = lib.mkOption {
       type = lib.types.str;
-      description = "An unique name of the config defined in configs.nix with added index when count > 1. By default, this also defines netowrking.hostName";
+      description = "An unique name of the config defined in configs.nix with added index when count > 1. By default, this also defines networking.hostName";
     };
 
     username = lib.mkOption {
@@ -33,7 +33,13 @@
     nixos-config = lib.mkOption {
       type = lib.types.attrs;
       default = {};
-      description = "Pass-through NixOS configuration";
+      description = "Pass-through NixOS configuration. But don't use virtualisation configuration options here. Use nixos-config-virt instead.";
+    };
+
+    nixos-config-virt = lib.mkOption {
+      type = lib.types.attrs;
+      default = {};
+      description = "Pass-through NixOS configuration only for virtualized instances (VM builds, not for disk images). Overwrites values from nixos-config.";
     };
 
     init = {
@@ -57,6 +63,12 @@
         "code.py" = ./python/code.py;
         "config/settings.json" = /etc/second-file-path/settings.json;
       };
+    };
+
+    diskImage = lib.mkOption {
+      type = lib.types.nullOr lib.types.attrs;
+      default = null;
+      description = "Null to disable making a disk image for this configurations. Otherwise, set parameters for make-disk-image.nix (see https://github.com/NixOS/nixpkgs/blob/master/nixos/lib/make-disk-image.nix). This option ignores count option - only one image per configuration will be built. Note: the disk image won't be built unless appropriate built flag is used when building the configs.";
     };
 
     # Options for internal use. Don't use them in your user configurations (configs.nix).

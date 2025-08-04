@@ -1,8 +1,14 @@
-{ userConfigsFile }:
+{ userConfigsFile, generateDiskImages, system }:
 let
   # TODO: somehow pass pkgs into here? Run this from flake.nix?
-  pkgs = import <nixpkgs> {};
-  configBuilder = config: (import ./base-configuration.nix { inherit pkgs config; });
+  pkgs = import <nixpkgs> { inherit system; };
+
+  lib = pkgs.lib;
+  configBuilder = { config, forDiskImage }: (import ./base-configuration.nix { inherit pkgs config forDiskImage; });
+  # Helper function
+  mapIfNotNull = f: list:
+    builtins.filter (x: x != null) (map f list);
+
 
   userConfigs = import userConfigsFile { inherit pkgs; };
   # Generates nix configurations (effectively configuration.nix files)
@@ -17,7 +23,7 @@ let
           # Keep name to pass-on later. Otherwise this info will be lost.
           name = configName;
           # Build module to be passed into configBuilder
-          value = (pkgs.lib.evalModules {
+          value = (lib.evalModules {
             modules = [
               ./options.nix
               value
@@ -35,21 +41,21 @@ let
     # listToAttrs will convert list of name-value attrs to attr {name1 = value1, name2 = value2, ...}
     builtins.map (c: {
         name = c.name;
-        value = configBuilder c.value;
         pureConfig = c.value; # Original user config, with added internal values
+        vmConfig = configBuilder { config = c.value; forDiskImage = false; };
+        diskImageConfig = configBuilder { config = c.value; forDiskImage = true; };
     }) configsReadyForBuilder
   ) userConfigs));
 
 
   # Scripts that run generated VMs
-  runVmScripts = pkgs.lib.foldl' pkgs.lib.mergeAttrs {} (builtins.map (machine:
+  runVmScripts = lib.foldl' lib.mergeAttrs {} (builtins.map (machine:
     {
       "${machine.name}" = pkgs.writeShellScriptBin "${machine.name}" ''
         if [[ -e "${machine.name}.qcow2" ]]; then
           echo "Warning: using cached image '${machine.name}.qcow2'. Delete it if you've rebuilt VM." >&2
         fi
         echo "Running ${machine.name}"
-        # TODO: run in background, don't block execution - provide options for that (as parameters to this script?)
         ${machine.vm-path}/bin/run-${machine.name}-vm $@ &
       '';
     }
@@ -64,7 +70,7 @@ let
   '';
 
   # SSH into a VM from the host
-  sshIntoVmScripts = pkgs.lib.foldl' pkgs.lib.mergeAttrs {} (builtins.map (c:
+  sshIntoVmScripts = lib.foldl' lib.mergeAttrs {} (builtins.map (c:
     let scriptName = "ssh-into-${c.pureConfig.configName}"; in
     {
       "${scriptName}" = pkgs.writeShellScriptBin "${scriptName}" ''
@@ -81,25 +87,36 @@ let
   sshIntoVmScriptPaths = builtins.attrValues sshIntoVmScripts;
 
 
-  # Generate nixos virtual machines (effectively the same as running nixos-rebuild -- build-vm)
-  # TODO: pin version - there is a specific way how to do this with flakes?
-  nixosSystem = import <nixpkgs/nixos/lib/eval-config.nix>;
+  # Generate nixos machines (effectively the same as running nixos-rebuild -- build-vm)
+  nixosSystem = import "${pkgs.path}/nixos/lib/eval-config.nix";
   nixosMachines = builtins.map (c:
-    {
-      name = c.name;
-      system = nixosSystem {
-        system = "x86_64-linux";
+    let
+      # Only one image is built per configuration - ignoring count option
+      makeDisk = c.pureConfig.diskImage != null && generateDiskImages && c.pureConfig.internal.index == 1;
+      diskImageSystem = if !makeDisk then null else nixosSystem {
+        system = system;
         modules = [
-          c.value
+          c.diskImageConfig
         ];
       };
+    in
+    {
+      name = c.name;
+      vmSystem = nixosSystem {
+        system = system;
+        modules = [
+          c.vmConfig
+        ];
+      };
+      diskImageSystem = diskImageSystem;
+      pureConfig = c.pureConfig;
     }
   ) configurations;
-  builtNixosMachinesList = builtins.map (m: m.vm-path) builtNixosMachinesListWithNames;
   builtNixosMachinesListWithNames = builtins.map (m: {
     name = m.name;
-    vm-path = m.system.config.system.build.vm;
+    vm-path = m.vmSystem.config.system.build.vm;
   }) nixosMachines;
+  builtNixosMachinesList = builtins.map (m: m.vm-path) builtNixosMachinesListWithNames;
 
   # This generate configurations (for debugging, they aren't needed)
   outputConfigFiles = pkgs.stdenv.mkDerivation {
@@ -109,18 +126,36 @@ let
       mkdir -p $out
       ${builtins.concatStringsSep "\n" (
         builtins.map (vm-config: ''
-          echo '${pkgs.lib.generators.toPretty {} vm-config.value}' > $out/configuration-${vm-config.name}.nix
+          echo '${lib.generators.toPretty {} vm-config.vmConfig}' > $out/configuration-${vm-config.name}.nix
         '') configurations
       )}
     '';
   };
+
+  make-disk-image = import "${pkgs.path}/nixos/lib/make-disk-image.nix";
+  qcow2Images = if !generateDiskImages then [] else mapIfNotNull (m:
+    let
+      configName = m.pureConfig.internal.baseConfigName;
+      gen-image = {}: make-disk-image ({
+        inherit pkgs lib;
+        config = m.diskImageSystem.config;
+        name = configName;
+        baseName = configName;
+        partitionTableType = "legacy+gpt";
+        installBootLoader = true;
+        onlyNixStore = false;
+        touchEFIVars = true;
+      } // m.pureConfig.diskImage);
+    in
+      if m.diskImageSystem != null then gen-image {} else null
+  ) nixosMachines;
 
   # Run this generator only once and then have everything in the derivation output
   rootResultDerivation = pkgs.symlinkJoin {
     # this'll be name of the output in the nix store
     name = "testnet-vms";
     # TODO: result/system je u outputu, ali samo za jedan machine jer se overwriteaju
-    paths = runVmScriptPaths ++ [ runAllVmsScript outputConfigFiles ] ++ sshIntoVmScriptPaths ++ builtNixosMachinesList;
+    paths = runVmScriptPaths ++ [ runAllVmsScript outputConfigFiles ] ++ sshIntoVmScriptPaths ++ builtNixosMachinesList ++ qcow2Images;
   };
 in
   rootResultDerivation
