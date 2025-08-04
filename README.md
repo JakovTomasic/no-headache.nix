@@ -61,6 +61,25 @@ This project has native support for tailscale with easy configuration.
 In `secrets/` directory create a file named `tailscale.authkey` (or change `tailscaleAuthKeyFile` in `configs.nix` to use different name and path)
 The file should just cointain a reusable tailscale key.
 
+## SSH
+
+Examples use provided public and private SSH keys.
+
+**Do not use those keys** on publicly accessible devices, especially in production.
+Generate new SSH keys and use *them* in your configurations.
+
+Using example keys is OK when testing software on a device with closed TCP ports.
+More specifically, ports defined with `firstHostSshPort` option (and sequential ports, depending on `count` option) must be closed on the host machine.
+
+# Examples
+
+Full runnable example of many configurations and usecases are in the `examples` directory.
+
+Usage instructions below reference individual examples.
+
+For examples that require SSH, an example SSH public and private keys have been used. Both public and private keys are available in the `example/sshkeys` directory.
+Add private key to your host machine with `ssh-add examples/sshkeys/private_key_file_name`.
+These keys are provided just for rully reproducible examples with zero setup steps. Don't use them in your configs.
 
 # Usage
 

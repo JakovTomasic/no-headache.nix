@@ -1,7 +1,7 @@
 { pkgs, ... }:
 let
 in
-# optionally, define users.users.your-username-by-default-nixy.openssh.authorizedKeys.keys = "put your public ssh key here"
+# optionally, define users.users.your-username-by-default-nixy.openssh.authorizedKeys.keys or keyFiles
 {
   # Every VM has one special program to see if ssh was correct.
   # These VM ports mustn't conflict.
