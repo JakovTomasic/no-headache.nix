@@ -134,7 +134,7 @@ Use `./result/bin/vm-name` to run the VM (replace it with your vm name. Note: wr
 There are several options:
 ```bash
 # Open a window of the VM:
-./result/bin/vm-name
+./result/bin/vm-name &
 
 # Open it directly in the current terminal:
 # To exit the VM just shutdown the VM and you'll return to your current terminal.
@@ -149,6 +149,18 @@ There are several options:
 Running `runAllVms` runs all VMs from the last built `configs.nix`.
 
 All arguments'll be forwarded to script for running each individual VM. See [Run individual vm](#run-individual-vm) to see options.
+
+### listRunningVMs
+
+This command lists names of all (QEMU) VMs that are currently running, one per line.
+
+Example: `listRunningVMs`
+
+### stopVm
+
+Running this command stops VM with defined name.
+
+Example: `stopVm hemisphere-1` (where VM is called hemisphere-1, from `vm-count-option`)
 
 ### Build disk images
 
@@ -183,15 +195,6 @@ When a VM is running you can SSH into it by running appropriate command in the g
 For example, run `./result/bin/ssh-into-yourVmName`.
 
 If you get error: "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!" delete that known host from `~/.ssh/known_hosts` (you probably want to delete all hosts that begin with `[localhost]:some-port` there). That error shouldn't happen if using only the `./result/bin/ssh-into-yourVmName` scripts.
-
-
-# QEMU
-
-todo: napisi client doc i ostalo makni u dev doc
-
-Virsh doesn't work because nix doesn't use it.
-List all QEMU processes `ps aux | grep qemu` to see what VMs are running.
-- todo: how to list processes? Write a script, if not anything else. (and ensure grep (package gnugrep) is available in the dev shell?)
 
 
 # VPN

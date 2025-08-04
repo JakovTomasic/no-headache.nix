@@ -62,6 +62,18 @@ Building compat envs (any nix environments) inside VM is slow. Always prebuild t
 
 Generally, building or installing anything nix-related in the VM is not recommended.
 
+## QEMU
+
+Virtual machines in this project are run in QEMU and generate qcow2 images because that's what Nix uses.
+To use other hypervisors, build a disk image.
+
+Virsh doesn't work because nix doesn't use it.
+Additionally, I don't want to use virsh because it must be installed on host system meaning I can't easily set it up in the environment, complicating project setup.
+
+List all QEMU processes `ps aux | grep qemu` to see what VMs are running.
+See written scripts for more advanced examples.
+
+
 
 # Other tips
 

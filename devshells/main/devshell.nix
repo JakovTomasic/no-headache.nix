@@ -55,17 +55,56 @@ let
 
     nix --extra-experimental-features nix-command --extra-experimental-features flakes build -f ${myFiles}/default.nix --arg userConfigsFile $CONFIG_FILE --arg generateDiskImages $GENERATE_DISK_IMAGES --argstr system "${system}" $TRACE_OPTION
     '';
-    runAll = pkgs.writeShellScriptBin "runAllVms" ''
-      ./result/bin/runAll $@
-    '';
-    sshInto = pkgs.writeShellScriptBin "sshInto" ''
-      ./result/bin/ssh-into-$1
-    '';
-  # TODO: make command to run single VM (by its name) - integrate with other run commands e.g. run --all
+  runAll = pkgs.writeShellScriptBin "runAllVms" ''
+    ./result/bin/runAll $@
+  '';
+  sshInto = pkgs.writeShellScriptBin "sshInto" ''
+    ./result/bin/ssh-into-$1
+  '';
+  listAllRunningVMs = pkgs.writeShellScriptBin "listRunningVMs" ''
+    ps aux | grep '[q]emu-system' | awk 'match($0, /-name ([^ ]+)/, m) { print m[1] }'
+  '';
+  stopVm = pkgs.writeShellScriptBin "stopVm" ''
+    # Check for argument
+    if [ -z "$1" ]; then
+      echo "Usage: $0 <vm-name>"
+      exit 1
+    fi
+
+    VM_NAME="$1"
+
+    # Find PIDs of QEMU instances with the exact -name argument
+    mapfile -t PIDS < <(
+      ps aux | grep '[q]emu-system' | grep -w "\-name $VM_NAME" | awk '{print $2}'
+    )
+
+    NUM_PIDS=''${#PIDS[@]}
+
+    if [ "$NUM_PIDS" -eq 0 ]; then
+      echo "No running VM found with name: $VM_NAME"
+      exit 1
+    elif [ "$NUM_PIDS" -gt 1 ]; then
+      echo "Multiple VMs found with name: $VM_NAME"
+      printf 'Matched PIDs: %s\n' "''${PIDS[@]}"
+      echo "Please write valid unique VM name."
+      exit 1
+    fi
+
+    PID="''${PIDS[0]}"
+    echo "Stopping VM '$VM_NAME' with PID $PID..."
+    kill "$PID"
+  '';
+
+  # These packages are included in most Unix environments so installing new version of them might be an overhead.
+  requirements = with pkgs; [
+    procps   # for ps, kill, top, uptime, etc.
+    gnugrep  # GNU grep
+    gawk     # GNU awk
+  ];
 in
   pkgs.mkShell {
     # myFiles $out/bin will be automatically added to the path
-    packages = [ myFiles build runAll printFilesPath sshInto ];
+    packages = requirements ++ [ myFiles build runAll printFilesPath sshInto listAllRunningVMs stopVm ];
 
     shellHook = ''
       echo "Dev shell loaded."

@@ -56,7 +56,7 @@ let
           echo "Warning: using cached image '${machine.name}.qcow2'. Delete it if you've rebuilt VM." >&2
         fi
         echo "Running ${machine.name}"
-        ${machine.vm-path}/bin/run-${machine.name}-vm $@ &
+        ${machine.vm-path}/bin/run-${machine.name}-vm $@
       '';
     }
   ) builtNixosMachinesListWithNames);
