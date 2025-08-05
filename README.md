@@ -156,22 +156,12 @@ Each machine has defined following environment variables:
 
 ### Run individual VM
 
-<!-- TODO: just three possible arguments intead of this weird stuff -->
-<!-- - then test runAllVms. It's weird... -->
-
 Use `./result/bin/vm-name` to run the VM (replace it with your vm name. Note: write just the vm name. Don't run the available `run-vm-name-vm` command).
-There are several options:
-```bash
-# Open a window of the VM:
-./result/bin/vm-name &
-
-# Open it directly in the current terminal:
-# To exit the VM just shutdown the VM and you'll return to your current terminal.
-./result/bin/vm-name -nographic
-
-# Run in background without opening any terminal
-./result/bin/vm-name -display none &
-```
+Optional arguments:
+- `-w` or `--window` - run VM in window mode (default)
+- `-n` or `--noui` - run VM in the background
+- if provided, only one of above arguments can be used and it needs to be used as the first argument/flag
+- any other arguments will be forwarded to QEMU so use any QEMU arguments you'd like
 
 ### runAllVms
 

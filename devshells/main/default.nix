@@ -55,8 +55,37 @@ let
         if [[ -e "${machine.name}.qcow2" ]]; then
           echo "Warning: using cached image '${machine.name}.qcow2'. Delete it if you've rebuilt VM." >&2
         fi
-        echo "Running ${machine.name}"
-        ${machine.vm-path}/bin/run-${machine.name}-vm $@
+
+        # default values
+        MODE_NAME="window mode"
+        VM_ARG=""
+        BACKGROUND="true"
+
+        # Take just the first option
+        case "$1" in
+          -n|--noui)
+            MODE_NAME="noui mode"
+            VM_ARG="-display none"
+            BACKGROUND="true"
+            shift 1
+          ;;
+          -w|--window)
+            # default values already set
+            shift 1
+          ;;
+          *)
+            # use default values
+            # Don't shift arguments because no custom arguemnt was provided - don't mess up qemu arguments
+          ;;
+        esac
+
+        echo "Running ${machine.name} in $MODE_NAME"
+        # Pass all other arguments to the qemu
+        if [ "$BACKGROUND" = "true" ]; then
+          ${machine.vm-path}/bin/run-${machine.name}-vm $VM_ARG $@ &
+        else
+          ${machine.vm-path}/bin/run-${machine.name}-vm $VM_ARG $@
+        fi
       '';
     }
   ) builtNixosMachinesListWithNames);
@@ -153,8 +182,7 @@ let
   # Run this generator only once and then have everything in the derivation output
   rootResultDerivation = pkgs.symlinkJoin {
     # this'll be name of the output in the nix store
-    name = "testnet-vms";
-    # TODO: result/system je u outputu, ali samo za jedan machine jer se overwriteaju
+    name = "lessheadache";
     paths = runVmScriptPaths ++ [ runAllVmsScript outputConfigFiles ] ++ sshIntoVmScriptPaths ++ builtNixosMachinesList ++ qcow2Images;
   };
 in
