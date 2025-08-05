@@ -88,19 +88,5 @@
       };
     };
   };
-
-  # TODO: write assertions if needed (e.g. no config option for hostname and some other options)
-  # _module.args = {
-  #   myCustomConfig = customConfig;
-  # };
-  # config = {
-  #   # Use it somewhere in your module
-  #   assertions = [
-  #     {
-  #       assertion = myCustomConfig.count > 0;
-  #       message = "count must be positive";
-  #     }
-  #   ];
-  # };
 }
 

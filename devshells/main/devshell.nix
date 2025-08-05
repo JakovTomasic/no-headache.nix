@@ -42,7 +42,10 @@ let
 
     echo "Using config file: $CONFIG_FILE"
 
-    nix --extra-experimental-features nix-command --extra-experimental-features flakes build -f ${absPath}/devshells/main/default.nix --arg userConfigsFile $CONFIG_FILE --arg generateDiskImages $GENERATE_DISK_IMAGES --argstr system "${system}" $TRACE_OPTION
+    # Enter the directory so that flake is in the current directory
+    cd "${absPath}"
+    # Overwrite nix path to use flake version, fixing <nixpkgs>
+    NIX_PATH="nixpkgs=flake:nixpkgs" nix --extra-experimental-features nix-command --extra-experimental-features flakes build -f devshells/main/default.nix --arg userConfigsFile $CONFIG_FILE --arg generateDiskImages $GENERATE_DISK_IMAGES --argstr system "${system}" $TRACE_OPTION
     '';
   runAll = pkgs.writeShellScriptBin "runAllVms" ''
     ./result/bin/runAll $@

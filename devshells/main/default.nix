@@ -1,6 +1,6 @@
 { userConfigsFile, generateDiskImages, system }:
 let
-  # TODO: somehow pass pkgs into here? Run this from flake.nix?
+  # Flake version will be used because NIX_PATH is overwritten
   pkgs = import <nixpkgs> { inherit system; };
 
   lib = pkgs.lib;

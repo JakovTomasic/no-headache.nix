@@ -58,8 +58,7 @@ Example:
 tailscaleAuthKeyFile = ./secrets/tailscale.authkey;
 ```
 
-For full config example, see `?` example.
-- todo: write tailscale example?
+For full config example, see `server-client` example.
 
 ## count
 
