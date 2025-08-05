@@ -7,10 +7,10 @@ let
 
   tsKeyFile = ./secrets/tailscale.authkey;
 
-  # Common shared directory for communicating IP addresses.
-  # Ideally, client should know server IP address in advance or get it without sharing a directory.
+  # Common shared directory so I don't have to enter the machine (e.g. via SSH or terminal GUI) every time.
+  # Just read this directory on host for viewing logs.
   sharedDirectory = {
-    exampleSharedDir = {
+    debugSharedDir = {
       # Absolute path to host OS path of dir to be shared
       # Important: you need to create this directory before starting this VM
       # use: mkdir -p /tmp/my-nixos-vms-shared/server-client

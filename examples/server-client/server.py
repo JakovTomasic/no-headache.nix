@@ -1,39 +1,16 @@
 import socket
 import threading
-import subprocess
-import time
 
 HOST = '0.0.0.0'  # Listen on all interfaces
 PORT = 5000       # Port to listen on
 # Log to shared directory so I don't have to access server machine to read the log.
 LOG_FILE = '/mnt/shared/server_log.txt'
-IP_FILE = '/mnt/shared/server_ip.txt'
-IP_UPDATE_INTERVAL = 5  # seconds
 
 def log(text):
     with open(LOG_FILE, 'a') as f:
         f.write(text + "\n")
 
 log(f"successful init {LOG_FILE}, {PORT}")
-
-def get_tailscale_ip():
-    try:
-        result = subprocess.run(["tailscale", "ip", "--4"], capture_output=True, text=True, check=True)
-        return result.stdout.strip()
-    except subprocess.CalledProcessError:
-        return None
-
-def ip_writer():
-    while True:
-        ip = get_tailscale_ip()
-        if ip:
-            with open(IP_FILE, 'w') as f:
-                f.write(ip)
-            log(f"Wrote Tailscale IP: {ip}")
-        else:
-            log("Failed to get Tailscale IP")
-        time.sleep(IP_UPDATE_INTERVAL)
-
 
 def handle_client(conn, addr):
     with conn:
@@ -45,9 +22,6 @@ def handle_client(conn, addr):
             log(f"Received from {addr[0]}: {message}")
 
 def main():
-    # Start background thread to write IP
-    threading.Thread(target=ip_writer, daemon=True).start()
-
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         s.bind((HOST, PORT))
         s.listen()
