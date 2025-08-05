@@ -58,8 +58,15 @@ Setup steps. Tested on Ubuntu 24.04 LTS
 Optionally, setup tailscale server to connect VMs to.
 This project has native support for tailscale with easy configuration.
 
-In `secrets/` directory create a file named `tailscale.authkey` (or change `tailscaleAuthKeyFile` in `configs.nix` to use different name and path)
-The file should just cointain a reusable tailscale key.
+Recommended steps:
+- Open tailscale [web app](https://login.tailscale.com/admin/machines)
+- Click "add device" -> Linux server
+    - enable Ephemeral (Automatically remove the device from your tailnet when it goes offline)
+    - set Reusable auth key (so multiple machines can join using it)
+    - Auth key expiration - choose as you wish
+    - Generate scrip and copy `--auth-key` from it
+- In `secrets/` directory create a file named `tailscale.authkey` (or change `tailscaleAuthKeyFile` in `configs.nix` to use different name and path). The file should just cointain a reusable tailscale key.
+- When writing configuration, set `tailscaleAuthKeyFile` option.
 
 ## SSH
 
@@ -149,6 +156,9 @@ Each machine has defined following environment variables:
 
 ### Run individual VM
 
+<!-- TODO: just three possible arguments intead of this weird stuff -->
+<!-- - then test runAllVms. It's weird... -->
+
 Use `./result/bin/vm-name` to run the VM (replace it with your vm name. Note: write just the vm name. Don't run the available `run-vm-name-vm` command).
 There are several options:
 ```bash
@@ -191,7 +201,7 @@ About disk images:
 - This project doesn't implement method to run images. Run them in supported hypervisors or on bare metal.
 - For configuring images see option `diskImage` in [configuration instructions](./doc/configuring.md).
 - Image generator ignores `count` option. It'll generate single image for each configuration with defined `diskImage` option.
-  - That means environment variable *MACHINE_INDEX* is always 1 and *MACHINE_NAME* is equal to *MACHINE_BASE_NAME*.
+    - That means environment variable *MACHINE_INDEX* is always 1 and *MACHINE_NAME* is equal to *MACHINE_BASE_NAME*.
 - Minimal *raw* image (e.g. the ones from the *disk-images* example) is 3.1 GB large. Image file size for *qcow2* format is 1.7 GB and *qcow2-compressed* format 550 MB.
 - The generated images will remain in the nix store until you clean it with `nix store gc` (see [Storage cleanup](#storage-cleanup)).
 
@@ -216,38 +226,34 @@ For example, run `./result/bin/ssh-into-yourVmName`.
 If you get error: "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!" delete that known host from `~/.ssh/known_hosts` (you probably want to delete all hosts that begin with `[localhost]:some-port` there). That error shouldn't happen if using only the `./result/bin/ssh-into-yourVmName` scripts.
 
 
-# VPN
+## VPN
 
-todo: napisi client doc i ostalo makni u dev doc
+See setup steps before using tailscale in your project or running examples that require it.
 
-todo: problematicno dodjeljivanje imena tailscale doda suffix `-1`, `-2`, itd ako dvaput upalis vm sa istim imenom (cak i ako prvo ugasis ovaj prije)
-- ima fix - Ephemeral - ali tek nakon sat vremena se makne sa tailscale
+When `tailscaleAuthKeyFile` option is set, Tailscale will automatically be initialized in the VM/image.
 
-Use tailscale. You can even host your own server with headscale
+Tailscale automatically assigns ip adresses and changes hostnames (giving it suffix if two are the same).
 
-todo: validate this, update for my new api
-- open tailscale web app
-- add device - linux server
-    - set Reusable auth key - so multiple machines can join using it
-    - enable Ephemeral - Automatically remove the device from your tailnet when it goes offline
-    - Auth key expiration - choose as you wish
-    - generate scrip and copy `--auth-key` from it
-- in your VM config, add `services.tailscale.enable = true;`
-- `sudo tailscale up --login-server http://<HOST-IP>:8080 --authkey tskey-abc123...`
-    - no `--login-server` if using online tailscale server
-    - you can also copy this command from tailscale web
-- run two VMs
-    - get ip from one and ping it from the other
-    - get IP with `ip a` and then see `tailscale0` inet or just copy from the tailscale website gui (or just `tailscale ip --4` or `ip addr show tailscale0`)
+How to connect to tailscale:
+- If you don't have tailscale installed on your host machine enter shell with tailscale by running `./tailscaledevshell.sh` from the project root directory.
+- Run: `sudo tailscaled`. It'll start the tailscale service in that shell (you won't be able to use the shell as long as tailscaled is running)
+- Open new shell (new terminal), enter tailscale environment with `./tailscaledevshell.sh` (from project root dir)
+- in the new shell run `sudo tailscale up` and auth via brower or run `sudo tailscale up --authkey=tskey-xxxxxxxxxxxxxxxx` if you want to use a key
 
-`services.tailscale.authKeyFile`
-- A file containing the auth key. **Tailscale will be automatically started if provided.**
+Verify tailscale is running:
+- `tailscale ip`
+- `tailscale status` (this will show all devices in the virtual network)
+- `ip a` should have tailscale0
 
-You can also find the Tailscale IP for other devices on your network by adding the device hostname after the command. For example: `tailscale ip raspberrypi`
-- [source](https://tailscale.com/kb/1080/cli#ip)
+Now you can use ssh to connect to other devices in the tailscale network
+- note: use `ssh username@ip-address` and not hostname instead of username. The default username is nixy.
+- you can even connect via `ssh username@hostname`
 
-Tailscale automatically assigns ip adresses and hostnames (giving it suffix if two are the same)
-
+When you're done, run:
+```bash
+sudo tailscale down
+sudo pkill tailscaled
+```
 
 # Compatibility environments (compat envs)
 

@@ -259,6 +259,18 @@ nixos-config = {
 
 For full config example, see `server-client` example.
 
+### Connecting to Headscale VPN server
+
+You can host your own server with Headscale.
+If self-hosting tailscale set this option in nixos-config:
+```nix
+services.tailscale.extraUpFlags = [
+    "--login-server" "http://<HOST-IP>:8080"
+];
+```
+
+Also set `tailscaleAuthKeyFile` option normally like connecting to standard tailscale server.
+
 ### And much, much more
 
 You'll never learn all of the options.
