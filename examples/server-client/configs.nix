@@ -6,33 +6,48 @@ let
   sshKeyFile = ../sshkeys/example_ssh_key.pub;
 
   tsKeyFile = ./secrets/tailscale.authkey;
+
+  # Common shared directory for communicating IP addresses.
+  # Ideally, client should know server IP address in advance or get it without sharing a directory.
+  sharedDirectory = {
+    exampleSharedDir = {
+      # Absolute path to host OS path of dir to be shared
+      # Important: you need to create this directory before starting this VM
+      # use: mkdir -p /tmp/my-nixos-vms-shared/server-client
+      source = "/tmp/my-nixos-vms-shared/server-client";
+      # Absolute path to virtual machine path
+      target = "/mnt/shared";
+    };
+  };
 in
+# firstHostSshPort option won't work when connected to VPN because it won't route SSH from host OS. Host needs to connect to the tailscale, too.
 {
   client = {
     tailscaleAuthKeyFile = tsKeyFile;
     init.script = ''
-      # TODO: remove logging
-      echo "asdf" &> /home/nixy/output2.txt
-      python ~/client.py &> /home/nixy/output.txt
+      echo "Starting python client script..." &> ~/output.txt
+      python ~/client.py &>> ~/output.txt
     '';
     copyToHome = {
-      # Copy the script into ~/client.py
+      # Copy the script into VM ~/client.py
       "client.py" = ./client.py;
     };
     nixos-config = {
       users.users.nixy.openssh.authorizedKeys.keyFiles = [ sshKeyFile ];
       environment.systemPackages = with pkgs; [ python3 ];
     };
+    nixos-config-virt = {
+      virtualisation.sharedDirectories = sharedDirectory;
+    };
   };
   server = {
     tailscaleAuthKeyFile = tsKeyFile;
     init.script = ''
-      # TODO: remove logging
-      echo "asdf" &> /home/nixy/output2.txt
-      python ~/server.py &> /home/nixy/output.txt
+      echo "Starting python server script..." &> ~/output.txt
+      python ~/server.py &>> ~/output.txt
     '';
     copyToHome = {
-      # Copy the script into ~/server.py
+      # Copy the script into VM ~/server.py
       "server.py" = ./server.py;
     };
     nixos-config = {
@@ -40,6 +55,9 @@ in
       environment.systemPackages = with pkgs; [ python3 ];
 
       networking.firewall.allowedTCPPorts = [ 5000 ];
+    };
+    nixos-config-virt = {
+      virtualisation.sharedDirectories = sharedDirectory;
     };
   };
 }

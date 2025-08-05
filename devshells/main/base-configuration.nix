@@ -89,29 +89,27 @@ in
     tailscaleServiceOrNot = if tailscaleEnabled then [ "tailscaled.service" ] else [];
     tailscaleOrNot = if tailscaleEnabled then [ pkgs.tailscale ] else [];
     homeDir = "/home/${config.username}";
-    logFile = "${homeDir}/script-at-boot.log";
-    tailscaleSetupScript = ''
-      echo "Setting up tailscale" &>> ${logFile}
-      tailscaled -state=mem: &>> ${logFile} || true
-    '';
-    initScriptPath = pkgs.writeScript "init-script.sh" config.init.script;
-  in {
-    enable = true;
-    script = ''
-      # Make tailscale ephemeral
-      ${if tailscaleEnabled then tailscaleSetupScript else ""}
+    logFile = "'${homeDir}/script-at-boot.log'";
+    initScriptPath = pkgs.writeShellScriptBin "init-script.sh" config.init.script;
+    serviceScript = pkgs.writeShellScriptBin "serviceScript.sh" ''
+      echo "" > ${logFile}
+      echo "Starting boot service..." &>> ${logFile}
 
-      # Copy all symlinks from temporary etc dir to desired home destinations.
-      cp -Pr /etc/${copyToHomeTmpEtcDirName}/* ~
+      # Copy all symlinks from temporary etc dir to desired home destinations. (run as user)
+      runuser -l ${config.username} -c 'cp -Pr /etc/${copyToHomeTmpEtcDirName}/* ~'
 
       echo "Setup done. Starting config.init.script" &>> ${logFile}
-      source ${initScriptPath}
+      # Run the init script as user
+      runuser -l ${config.username} -c "${initScriptPath}/bin/init-script.sh"
     '';
+  in {
+    enable = true;
+    # Run the script as root and then switch to the user for user-defined script.
+    script = "${serviceScript}/bin/serviceScript.sh";
 
     serviceConfig = {
       Type = "oneshot";               # Runs once and exits
       RemainAfterExit = false;        # Consider service active after it runs
-      User = "${config.username}";
       WorkingDirectory = homeDir;     # Optional default directory
       Environment = "HOME=${homeDir}";      # Needed for pip/venv
       # StandardOutput = "journal+console"; # Useful for debugging
@@ -123,22 +121,12 @@ in
     requires = [ "local-fs.target" "network-online.target" ] ++ tailscaleServiceOrNot;
 
     # Manually add all binary files to path (otherwise no program will be available in the path)
-    # TODO: can I remove iproute2 and coreutils?
-    path = userPkgs ++ tailscaleOrNot ++ (with pkgs; [ iproute2 coreutils ]);
+    path = userPkgs ++ tailscaleOrNot ++ (with pkgs; [
+      util-linux # for the runuser command
+    ]);
 
     # Needs to be included separately because global env variables aren't initialized yet
     environment = envVariables;
-
-    preStart = if config.tailscaleAuthKeyFile == null then "" else ''
-        echo "" > ${logFile}
-        echo "Waiting for Tailscale IP..." &>> ${logFile}
-        while ! ${pkgs.tailscale}/bin/tailscale ip --4 | grep -qE '^100\.'; do
-          sleep 1
-          echo "Still waiting... Output:" &>> ${logFile}
-          ${pkgs.tailscale}/bin/tailscale ip --4 &>> ${logFile}
-        done
-        echo "Tailscale is ready with IP: $(${pkgs.tailscale}/bin/tailscale ip)" &>> ${logFile}
-        '';
   };
 
 
@@ -163,7 +151,7 @@ in
     enable = lib.mkDefault tailscaleEnabled;
     # autostart tailscale (even before login to nixos)
     authKeyFile = lib.mkDefault config.tailscaleAuthKeyFile;
-    extraUpFlags = [
+    extraUpFlags = lib.mkDefault [
       # "--login-server" "http://<HOST-IP>:8080"
     ];
   };

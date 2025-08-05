@@ -1,36 +1,66 @@
 import socket
 import time
 import subprocess
+import ipaddress
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
-SERVER_IP = ""
+# Dirty fix for knowing server IP address: constantly read it from the shared file.
+
 PORT = 5000
-LOG_FILE = '/home/nixy/log.txt'
+TIMEOUT = 1
+# Log to shared directory so I don't have to access client machine to read the log.
+LOG_FILE = '/mnt/shared/client_log.txt'
+SERVER_IP_FILE = '/mnt/shared/server_ip.txt'
 
-while SERVER_IP[0:4] != "100.":
-    proc = subprocess.run(['tailscale', 'ip', '-4', 'server'], encoding='utf-8', stdout=subprocess.PIPE)
-    ip = proc.stdout
+server_ip = None
 
-    # SERVER_IP = '192.168.1.100'  # Replace with server's LAN IP
-    # SERVER_IP = '127.0.0.1'
-    SERVER_IP = ip.split('\n')[0]
-
+def log(text):
     with open(LOG_FILE, 'a') as f:
-        f.write(f"client init ip: {ip}")
+        f.write(text + "\n")
+
+
+def get_ip_from_file():
+    try:
+        with open(SERVER_IP_FILE, "r") as f:
+            ip = f.read().strip()
+            return ip
+    except FileNotFoundError:
+        return None
+
+# returns true if ip changed, false otherwise
+def update_server_ip():
+    global server_ip
+    old = server_ip
+    while True:
+        server_ip = get_ip_from_file()
+        if server_ip != None: return server_ip != old
+        log("No devices found with port 5000 open. Trying again in 5 seconds...")
+        time.sleep(5)
 
 def main():
+    global server_ip
+    update_server_ip()
+
     while True:
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-                s.connect((SERVER_IP, PORT))
+                s.connect((server_ip, PORT))
                 while True:
                     message = f"Hello from client at {time.ctime()}"
                     s.sendall(message.encode())
-                    print(f"Sent: {message}")
+                    log(f"Sent: {message}")
                     time.sleep(5)  # Send every 5 seconds
+                    if update_server_ip():
+                        log(f"Server IP address changed! New ip = {server_ip}")
+                        break
         except ConnectionRefusedError:
-            print("Connection refused, retrying in 5 seconds...")
+            log("Connection refused, retrying in 5 seconds...")
             time.sleep(5)
+
 
 if __name__ == "__main__":
     main()
+
+
+
 
