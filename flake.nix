@@ -9,8 +9,9 @@
   outputs = { self, nixpkgs, flake-utils }: flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs = import nixpkgs { inherit system; };
+      absPath = self.outPath;  # This is the absolute path of the flake (in the nix store)
     in {
-      devShells.default = import ./devshells/main/devshell.nix { inherit pkgs system; };
+      devShells.default = import ./devshells/main/devshell.nix { inherit pkgs system absPath; };
       devShells.tailscale = import ./devshells/tailscale/devshell.nix { inherit pkgs; };
     });
 }

@@ -7,12 +7,16 @@ Should be useful for anyone trying to change anything in this project (except co
 If you don't know what are `configs.nix` or compat env files or haven't read the README.md this is a wrong place to be right now. See you later, maybe :)
 
 
-## Changing main devshell
-
-When you change anything from the main dev shell you need to exit current shells and re-enter them. That'll trigger a rebuild.
-On a build, all files are copied to nix store and used there so changing e.g. default.nix won't take effect until you rebuild the shell.
+## Main devshell
 
 The main devshell is the devshell used for developing this project itself as well as changing and using custom configuration.
+
+When entering devshell in flake, the flake copies whole project directory (only git files) to the nix store.
+You can get that path with `absPath = self.outPath;`.
+
+Changing main devshell:
+When you change anything from the main dev shell you need to exit current shells and re-enter them. That'll trigger a rebuild.
+On a build, all files are copied to nix store and used there so changing e.g. default.nix won't take effect until you rebuild the shell.
 
 
 ## Basic run

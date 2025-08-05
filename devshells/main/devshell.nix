@@ -1,19 +1,8 @@
-{ pkgs, system } :
+{ pkgs, system, absPath } :
 let
   # Define a derivation that includes your files
-  myFiles = pkgs.stdenv.mkDerivation {
-    name = "my-files";
-    src = ./.;
-
-    installPhase = ''
-          mkdir -p $out/bin
-          cp $src/base-configuration.nix $out/
-          cp $src/default.nix $out/
-          cp $src/options.nix $out/
-          '';
-  };
   printFilesPath = pkgs.writeShellScriptBin "printFilesPath" ''
-        echo "${myFiles}"
+    echo "${absPath}"
   '';
   build = pkgs.writeShellScriptBin "buildVms" ''
     # Default values
@@ -53,7 +42,7 @@ let
 
     echo "Using config file: $CONFIG_FILE"
 
-    nix --extra-experimental-features nix-command --extra-experimental-features flakes build -f ${myFiles}/default.nix --arg userConfigsFile $CONFIG_FILE --arg generateDiskImages $GENERATE_DISK_IMAGES --argstr system "${system}" $TRACE_OPTION
+    nix --extra-experimental-features nix-command --extra-experimental-features flakes build -f ${absPath}/devshells/main/default.nix --arg userConfigsFile $CONFIG_FILE --arg generateDiskImages $GENERATE_DISK_IMAGES --argstr system "${system}" $TRACE_OPTION
     '';
   runAll = pkgs.writeShellScriptBin "runAllVms" ''
     ./result/bin/runAll $@
@@ -103,8 +92,7 @@ let
   ];
 in
   pkgs.mkShell {
-    # myFiles $out/bin will be automatically added to the path
-    packages = requirements ++ [ myFiles build runAll printFilesPath sshInto listAllRunningVMs stopVm ];
+    packages = requirements ++ [ build runAll printFilesPath sshInto listAllRunningVMs stopVm ];
 
     shellHook = ''
       echo "Dev shell loaded."
