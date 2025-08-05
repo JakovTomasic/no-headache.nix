@@ -59,7 +59,7 @@ tailscaleAuthKeyFile = ./secrets/tailscale.authkey;
 ```
 
 For full config example, see `server-client` example.
-
+-
 ## count
 
 A positive number defining how many instances of that VM to create, with the same configuration.
@@ -97,7 +97,7 @@ It'll run in the background and you don't have to login into the VM user to star
 The script is run as the user.
 This is useful options for automatins scripts.
 
-You can use provided environment variables in this script.
+You can use standard environment variables in this script.
 
 NixOS (virtual) machine will start systemd service that runs the script and finishes or crashes with the script.
 To see systemd service status run `systemctl status script-at-boot`.

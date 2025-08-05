@@ -1,28 +1,28 @@
 
-TODO: project name? Naming is hard :(
+# no-headache.nix
 
+**N**otably **O**pinionated but **H**ighly **E**xtensible **A**nd **D**eclarative **A**PI for **C**onfiguring **H**undreds of **E**nvironments (using Nix)
 
-# An overview
-
-VM.Nix (TODO: project name) is a development and testing environment powered by the Nix package manager, allowing you to define and run declarative, reproducible, and isolated NixOS virtual machines (VMs) and disk images with minimal setup. It’s ideal for projects that require per-VM configuration, quick and easy VMs setup, or clean state environments, all without the overhead of containers or cloud infrastructure.
+no-headache.nix is a development and testing environment powered by the Nix package manager, allowing you to define and run declarative, reproducible, and isolated NixOS virtual machines (VMs) and disk images with minimal setup. It’s ideal for projects that require per-VM configuration, quick and easy VMs setup, or clean state environments, all without the overhead of complex virtualisation systems or cloud infrastructure.
 
 Key Features:
 
 - Single config file per setup – define multiple VMs in a single `configs.nix`.
 - Zero manual dependency management – all tools are provisioned through Nix.
-- Built-in dev shell – provides commands for building, running, and managing VMs.
+- Built-in dev shell – provides easy `nohead` command for building, running, and managing VMs.
 - Tailscale integration – connect VMs over VPN effortlessly.
 - Persistent shared directories – share files between host and VM.
 - Compatibility environments – supports complex setups (e.g., Python with FHS and pip install).
 - SSH & port forwarding – connect to VMs via SSH from host or over VPN.
 - Build full disk images – for running in any hypervisor or on bare metal.
 - Over 20,000 standrad NixOS options – use any NixOS options to configure your VMs.
+- Runs wherever Nix package manager does – works on all popular Linux distributions, not just NixOS.
 
 This is user documentation. For developer documentation see [dev doc](./doc/dev.md).
 
 ## How it works
 
-VM.Nix (TODO: project name) is a `nix-build` command wrapper with simple API for configuring and running many virutal machines.
+no-headache.nix is a `nix-build` command wrapper with simple API for configuring and running many virutal machines.
 
 - Nix is the only dependency required.
 - All other tools (e.g., QEMU, build scripts) are pulled into an isolated dev shell.
@@ -49,8 +49,8 @@ Setup steps. Tested on Ubuntu 24.04 LTS
         - for Single-user installation you may need to run `. /home/ubuntu/.nix-profile/etc/profile.d/nix.sh` before using nix (as instructed after installation)
 - download this project and `cd` into this project's root directory
 - run `./enterdevshell.sh`
-- build a configuration: `buildVms -c examples/vm-count-option/configs.nix`
-- run all VMs with `runAllVms`
+- build a configuration: `nohead build -c examples/vm-count-option/configs.nix`
+- run all VMs with `nohead runall`
 - that's it. Close the VMs and write your own configurations. Happy configuring!
 
 ## Tailscale
@@ -99,6 +99,8 @@ To enter the dev shell just run the `enterdevshell.sh` command (e.g. from the pr
 
 To exit the dev shell just close the terminal or run `exit`.
 
+Once you're in the dev shell, everything can be run via `nohead` command that aims to be so simple you don't even need to use your head (once you get familiar with it).
+
 
 ## Configurations
 
@@ -110,35 +112,40 @@ For documentation on writing configurations, see [Writing configurations](./doc/
 
 ## Commands
 
-These commands are built-in to the development shell and can be run like any global commands (while in the shell).
+The `nohead` command is built-in to the development shell and can be run like any global commands (while in the shell).
+If don't want to use your precious brain cells for remembering subcommands, you can always run `nohead help` (or just `nohead` or `nohead --help` or `nohead h` or even `nohead whatisgoingon`, we try not to (over)think around here).
 
-todo - should all this be single command e.g. vmnix run --all
+### build
 
-### buildVms
-
-Running `buildVms` builds all virtual machine configurations.
+Running `nohead build` builds all virtual machine configurations.
 
 By default, the command uses `configs.nix` file from the current directory.
-To specify custom path to the configs.nix file run e.g. `buildVms -c examples/python/configs.nix` or `buildVms -c ../configs-with-custom-name.nix`.
+To specify custom path to the configs.nix file run e.g. `nohead build -c examples/python/configs.nix` or `nohead build -c ../configs-with-custom-name.nix`.
 
-You can also run `buildVms -h` or `buildVms --help` for (very) short overview.
+You can also run `nohead build --help` for (very) short overview.
 
-This command will create symlink to nix store named `result` in the current directory (the `result` is practically a new created directory).
+This command will create symlink to nix store named `result` in the project root directory (by default).
 You can leave that symlink. You'll never need to use it directly, but you may if curious.
 The result directory contains all built outputs with all configurations and executable files. All executable files are located in `result/bin/` directory.
 Every time the VMs are built, the result symlink is overwritten with the new results.
 
 Build outputs persist in the nix store even after you delete the result symlink. See [Storage cleanup](#storage-cleanup) section for how to remove old files.
 That means you can have and use multiple results. E.g. you can:
-- build VM from `configs1.nix`. The `result` symlink will be created
+- build VM from `configs1.nix` using `nohead build -c configs1.nix`. The `result` symlink will be created (in the project's root dir)
 - rename it to result1 so it doesn't get overwritten (run `mv result result1`)
-- build VM again, but use `configs2.nix`
+- build VM again, but use `configs2.nix` (`nohead build -c configs2.nix`)
 - optionally, rename new result, too. For consistency (`mv result result2`)
 - you now have two result symlink directories. Each for separate configs.
+- to use commands in each of them provide `--result` option. E.g. `lsshead -r result2 run server`
 
-### Running VMs
+Alternatively, use nohead --result (or -r) flag:
+- `nohead -r result1 build -c configs1.nix` - build and generate result in the current directory
+- `nohead -r result2 build -c configs2.nix` - same for the second config
+- now use the two directories. E.g. run VMs from both results: `nohead -r result1 runall ; nohead -r result2 runall`
 
-There are few ways to run VMs from built configurations.
+### Run VMs
+
+There are few ways to run VMs from built configurations (last configuration that successfuly finished the `nohead build` process).
 
 Generally, by running a VM a image for persistent storage `name_of_the_machine.qcow2` will be created in the current directory.
 For simple configs, the image is just around 10 MB big because `/nix/store` is shared with the host.
@@ -154,37 +161,19 @@ Each machine has defined following environment variables:
 - *MACHINE_NAME* – Full name of the machine. Equals to the name in the `configs.nix` file and index if `count` option is used.
 - *MACHINE_TYPE* – "image" if the machine is build as disk image and "virtual" if it's build as a virtual machine.
 
-### Run individual VM
-
-Use `./result/bin/vm-name` to run the VM (replace it with your vm name. Note: write just the vm name. Don't run the available `run-vm-name-vm` command).
-Optional arguments:
+Run individual VM with `nohead run <vm-name>` (e.g. `nohead run server`). Optional arguments:
 - `-w` or `--window` - run VM in window mode (default)
 - `-n` or `--noui` - run VM in the background
 - if provided, only one of above arguments can be used and it needs to be used as the first argument/flag
 - any other arguments will be forwarded to QEMU so use any QEMU arguments you'd like
 
-### runAllVms
-
-Running `runAllVms` runs all VMs from the last built `configs.nix`.
-
-All arguments'll be forwarded to script for running each individual VM. See [Run individual vm](#run-individual-vm) to see options.
-
-### listRunningVMs
-
-This command lists names of all (QEMU) VMs that are currently running, one per line.
-
-Example: `listRunningVMs`
-
-### stopVm
-
-Running this command stops VM with defined name.
-
-Example: `stopVm hemisphere-1` (where VM is called hemisphere-1, from `vm-count-option`)
+Run all VMs at the same time with `nohead runall`.
+All arguments'll be forwarded to script for running each individual VM. See options above.
 
 ### Build disk images
 
 Run the build command with `--images` argument to, along VMs, build the full disk images, too.
-Full command example: `buildVms -c examples/disk-images/configs.nix --images`
+Full command example: `nohead build -c examples/disk-images/configs.nix --images`
 
 About disk images:
 - Image will be built only for configurations with defined `diskImage` option.
@@ -198,6 +187,13 @@ About disk images:
 Symlink to built image will be generated in the `result` directory.
 Copy it somewhere else to use it. Also see the image file permissions and file owner.
 
+### Other commands
+
+- List running VMs - Command `nohead list` lists names of all (QEMU) VMs that are currently running, one per line.
+- Stop VM - Command `nohead stop <vm-name>` stops VM with defined name.
+    - Example: `nohead stop hemisphere-1` (where VM is called hemisphere-1, from `vm-count-option`)
+- Run `nohead help` for this information and complete list of all option.
+
 
 ## SSH
 
@@ -210,10 +206,9 @@ Full example of such `configs.nix` is provided in the `ssh-from-host` example.
 
 Just define the `firstHostSshPort` option (e.g. set it to 2222) and build and run the VMs.
 
-When a VM is running you can SSH into it by running appropriate command in the generated `result/bin/` directory.
-For example, run `./result/bin/ssh-into-yourVmName`.
+When a VM is running you can SSH into it by running `nohead ssh <vm-name>`
 
-If you get error: "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!" delete that known host from `~/.ssh/known_hosts` (you probably want to delete all hosts that begin with `[localhost]:some-port` there). That error shouldn't happen if using only the `./result/bin/ssh-into-yourVmName` scripts.
+If you get error: "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!" delete that known host from `~/.ssh/known_hosts` (you probably want to delete all hosts that begin with `[localhost]:some-port` there). That error shouldn't happen if only using the `nohead ssh` command.
 
 
 ## VPN

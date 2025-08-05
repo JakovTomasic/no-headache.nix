@@ -182,7 +182,7 @@ let
   # Run this generator only once and then have everything in the derivation output
   rootResultDerivation = pkgs.symlinkJoin {
     # this'll be name of the output in the nix store
-    name = "lessheadache";
+    name = "no-headache";
     paths = runVmScriptPaths ++ [ runAllVmsScript outputConfigFiles ] ++ sshIntoVmScriptPaths ++ builtNixosMachinesList ++ qcow2Images;
   };
 in

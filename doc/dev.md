@@ -13,6 +13,7 @@ The main devshell is the devshell used for developing this project itself as wel
 
 When entering devshell in flake, the flake copies whole project directory (only git files) to the nix store.
 You can get that path with `absPath = self.outPath;`.
+When in the shell you can print this with `nohead path`
 
 Changing main devshell:
 When you change anything from the main dev shell you need to exit current shells and re-enter them. That'll trigger a rebuild.
@@ -41,10 +42,6 @@ This is just a basic example. See running scripts to see what other options are 
 
 This builds VM configuration and by running it you create a image for persistent storage. Image is just around 10 MB big because `/nix/store` is shared with the host.
 
-
-## printFilesPath
-
-In the dev shell, command `printFilesPath` prints where in the nix store are all dev shell files.
 
 ## SSH
 

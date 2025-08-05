@@ -5,6 +5,7 @@
 
 # Get the directory of this script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export NO_HEADACHE_PROJECT_ROOT_DIR="$SCRIPT_DIR"
 
 # exec replaces this bash process with the nix develop shell.
 # That eliminates one dangling bash process just waiting for nix develop to finish.
