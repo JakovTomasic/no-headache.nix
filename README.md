@@ -9,6 +9,7 @@ Key Features:
 
 - Single config file per setup – define multiple VMs in a single `configs.nix`.
 - Zero manual dependency management – all tools are provisioned through Nix.
+- Fully declarative and reproducible – uses Nix with Flakes.
 - Built-in dev shell – provides easy `nohead` command for building, running, and managing VMs.
 - Tailscale integration – connect VMs over VPN effortlessly.
 - Persistent shared directories – share files between host and VM.
@@ -266,6 +267,8 @@ It also serves as an example for other projects.
 Python FHS support greatly simplifies Python development and adds support for common commands like `pip install`.
 
 You may modify and/or copy this file as needed.
+If you get a missing dependencies error, add the needed dependency in the dependency list inside (see the note).
+That might happen when using Python libraries with special dependencies.
 
 As shown in `python-shared-venv` Python example, you can have venv in the persistent shared directory.
 That's useful when rebuilding VMs and resetting all VM storage, as venv setup and package installation can take a long time.

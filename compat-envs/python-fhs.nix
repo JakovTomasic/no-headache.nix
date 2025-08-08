@@ -9,6 +9,8 @@ pkgs.buildFHSEnv (base // {
     gcc
     glibc
     zlib
+    # NOTE: add more dependencies here if you get a missing dependencies error
+
     (python3.withPackages (python-pkgs: with python-pkgs; [
         # Add all python packages you want here, if not using requirements.txt
         # For package names use search: https://search.nixos.org/packages
