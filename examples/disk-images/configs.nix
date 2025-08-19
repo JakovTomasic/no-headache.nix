@@ -15,10 +15,6 @@ in
     nixos-config = {
       # Install cowsay in every VM and image with this configuration
       environment.systemPackages = with pkgs; [ cowsay ];
-
-      # Default value overwriteen in the nixos-config-virt
-      # See active keys by running: cat /etc/ssh/authorized_keys.d/nixy
-      users.users.nixy.openssh.authorizedKeys.keyFiles = [ ../sshkeys/another_key.pub ];
     };
     # Disk images won't use options defined in nixos-config-virt, but directly run VMs will.
     nixos-config-virt = {
@@ -43,10 +39,6 @@ in
         # To check if variable is present fun: echo $MY_ENV_VAR 
         MY_ENV_VAR = "My VM-only custom env variable";
       };
-
-      # Use pkgs.lib.mkForce to overwrite default value (intead of concatinating it)
-      # See active keys by running: cat /etc/ssh/authorized_keys.d/nixy
-      users.users.nixy.openssh.authorizedKeys.keyFiles = [ ../sshkeys/example_ssh_key.pub ];
     };
   };
 

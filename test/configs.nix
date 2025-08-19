@@ -1,7 +1,7 @@
 { pkgs, ... }:
 let
   # use ssh key to avoid entering ssh password manually (tests need to run automatically)
-  sshKeyFile = ../examples/sshkeys/example_ssh_key.pub;
+  sshKeyFile = ../secrets/sshkeys/example_ssh_key.pub;
 in
 {
   # testing defaults

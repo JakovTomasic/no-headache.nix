@@ -2,9 +2,6 @@
 let
   # you can define variables here in let...in for less code duplication
 
-  # Change when you generate another ssh key (or add new keys to the lists below).
-  sshKeyFile = ../sshkeys/example_ssh_key.pub;
-
   tsKeyFile = ./secrets/tailscale.authkey;
 
   # Common shared directory so I don't have to enter the machine (e.g. via SSH or terminal GUI) every time.
@@ -33,7 +30,6 @@ in
       "client.py" = ./client.py;
     };
     nixos-config = {
-      users.users.nixy.openssh.authorizedKeys.keyFiles = [ sshKeyFile ];
       environment.systemPackages = with pkgs; [ python3 ];
     };
     nixos-config-virt = {
@@ -51,7 +47,6 @@ in
       "server.py" = ./server.py;
     };
     nixos-config = {
-      users.users.nixy.openssh.authorizedKeys.keyFiles = [ sshKeyFile ];
       environment.systemPackages = with pkgs; [ python3 ];
 
       networking.firewall.allowedTCPPorts = [ 5000 ];

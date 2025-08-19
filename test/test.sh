@@ -23,7 +23,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 PROJECT_ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 
-ssh-add "$PROJECT_ROOT_DIR/examples/sshkeys/example_ssh_key" &> /dev/null
+ssh-add "$PROJECT_ROOT_DIR/secrets/sshkeys/example_ssh_key" &> /dev/null
 
 
 

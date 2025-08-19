@@ -82,27 +82,11 @@ Recommended steps:
 
 To use ssh features (the `nohead ssh` command) you need to install and setup ssh on your device.
 
-Examples use provided public and private SSH keys.
-
-**Do not use those keys** on publicly accessible devices, especially in production.
-Generate new SSH keys and use *them* in your configurations.
-
-Using example keys is OK when testing software on a device with closed TCP ports.
-More specifically, ports defined with the `firstHostSshPort` option (and sequential ports, depending on the `count` option) must be closed on the host machine.
-
-TODO: why I need the auth keys? Where are they even used? - for tailscale only... (document that?)
-- I don't need them! Remove them! (comment-out examples as an example for later??? Or not?)
-
 # Examples
 
 Full runnable examples of many configurations and use cases are in the `examples` directory.
 
 Usage instructions below reference individual examples.
-
-For examples that require SSH, an example SSH public and private keys have been used. Both public and private keys are available in the `example/sshkeys` directory.
-Add a private key to your host machine with `ssh-add examples/sshkeys/private_key_file_name`.
-These keys are provided just for fully reproducible examples with zero setup steps. Don't use them in your configs.
-TODO: remove paragraph above if example sshkeys are removed
 
 # Usage
 
@@ -158,7 +142,7 @@ That means you can have and use multiple results. E.g., you can:
 - build a VM again, but use `configs2.nix` (`nohead build -c configs2.nix`)
 - optionally, rename the new result, too. For consistency (`mv result result2`)
 - you now have two result symlink directories. Each for separate configs.
-- to use commands in each of them, provide the `--result` option. E.g. `lsshead -r result2 run server`
+- to use commands in each of them, provide the `--result` option. E.g. `nohead -r result2 run server`
 
 Alternatively, use the `nohead --result` (or -r) option:
 - `nohead -r result1 build -c configs1.nix` - build and generate result1 in the current directory
@@ -210,8 +194,6 @@ Copy it somewhere else to use it. Also check the image file permissions and file
 
 ## SSH
 
-TODO: update and spell check (remove example keys if possible)
-
 When using SSH in a VPN, use it normally.
 OpenSSH server is enabled by default.
 
@@ -224,16 +206,11 @@ Just define the `firstHostSshPort` option (e.g. set it to 2222) and build and ru
 When a VM is running, you can SSH into it by running `nohead ssh <vm-name> [other standard ssh options...]`.
 E.g. ssh into a machine with `nohead ssh earth` or just run single command with `nohead ssh earth 'echo $MACHINE_NAME'`.
 
-If you get the error: "WARNING: REMOTE HOST IDENTIFICATION HAS CHANGED!" delete that known host from `~/.ssh/known_hosts` (you probably want to delete all hosts that begin with `[localhost]:some-port` there). That error shouldn't happen if only using the `nohead ssh` command.
-
-
 ## VPN
 
 See setup steps before using tailscale in your project or running examples that require it.
 
 When `tailscaleAuthKeyFile` option is set, Tailscale will automatically be initialized in the VM/image.
-
-TODO: test nix develop for tailscale
 
 How to connect to tailscale:
 - If you don't have tailscale installed on your host machine, enter shell with tailscale by running `nix --extra-experimental-features nix-command --extra-experimental-features flakes develop github:JakovTomasic/no-headache.nix#tailscale` from the project root directory.

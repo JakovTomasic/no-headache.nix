@@ -16,8 +16,6 @@ in
     firstHostSshPort = 2100;
     nixos-config = {
       environment.systemPackages = with pkgs; [ python3 ];
-
-      users.users.nixy.openssh.authorizedKeys.keyFiles = [ ../sshkeys/example_ssh_key.pub ];
     };
   };
 
@@ -53,8 +51,6 @@ in
           pandas
         ]))
       ];
-
-      users.users.nixy.openssh.authorizedKeys.keyFiles = [ ../sshkeys/example_ssh_key.pub ];
     };
   };
 
@@ -92,8 +88,6 @@ in
         # See 'Python-FHS compat env' in README.md
         (import ../../compat-envs/python-fhs.nix { inherit pkgs; })
       ];
-
-      users.users.nixy.openssh.authorizedKeys.keyFiles = [ ../sshkeys/example_ssh_key.pub ];
     };
   };
 
@@ -135,8 +129,6 @@ in
         # See 'Python-FHS compat env' in README.md
         (import ../../compat-envs/python-fhs.nix { inherit pkgs; })
       ];
-
-      users.users.nixy.openssh.authorizedKeys.keyFiles = [ ../sshkeys/example_ssh_key.pub ];
     };
   };
 }

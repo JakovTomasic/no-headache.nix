@@ -100,7 +100,6 @@
           '';
         };
       in {
-        # TODO: will this work? (from github)
         tailscale = import ./devshells/tailscale/devshell.nix { inherit pkgs; };
         nohead = nohead;
         default = nohead;

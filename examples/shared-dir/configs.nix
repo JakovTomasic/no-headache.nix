@@ -20,8 +20,6 @@ in
           target = "/mnt/shared";
         };
       };
-
-      users.users.nixy.openssh.authorizedKeys.keyFiles = [ ../sshkeys/example_ssh_key.pub ];
     };
   };
 }

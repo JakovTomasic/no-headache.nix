@@ -18,9 +18,6 @@ in
       cp ~/file.txt ~/modifiable-file.txt
     '';
     firstHostSshPort = 2200;
-    nixos-config = {
-      users.users.nixy.openssh.authorizedKeys.keyFiles = [ ../sshkeys/example_ssh_key.pub ];
-    };
   };
 }
 
