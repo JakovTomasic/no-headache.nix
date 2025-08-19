@@ -2,7 +2,7 @@
 let
   # you can define variables here in let...in for less code duplication
 
-  tsKeyFile = ./secrets/tailscale.authkey;
+  tsKeyFile = ../../secrets/tailscale.authkey;
 
   # Common shared directory so I don't have to enter the machine (e.g. via SSH or terminal GUI) every time.
   # Just read this directory on host for viewing logs.

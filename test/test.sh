@@ -218,9 +218,10 @@ fi
 cd no-headache
 
 # test default nohead build
-nohead build
+nohead build &> /dev/null
 
-nohead runall
+nohead runall &> /dev/null
+sleep 2
 nohead list &> list
 echo "empty" > list-expected
 diff -q list list-expected # the script will crash if files differ
@@ -372,6 +373,12 @@ echo "    - passed"
 
 
 
+
+nohead stopall &> /dev/null
+
+
+
+
 # TODO: test the python compat env
 
 
@@ -383,23 +390,20 @@ cd no-headache
 # Copy secrets to ensure builds succeed
 cp "$PROJECT_ROOT_DIR/secrets/tailscale.authkey" secrets/
 
-nohead -r example1 build -c .#copy-to-home
+nohead -r example1 build -c .#copy-to-home &> /dev/null
 echo "    - passed (1/7)"
-nohead -r example2 build -c .#disk-images
+nohead -r example2 build -c .#disk-images &> /devnull
 echo "    - passed (2/7)"
-nohead -r example3 build -c .#python
+nohead -r example3 build -c .#python &> /devnull
 echo "    - passed (3/7)"
-nohead -r example4 build -c .#server-client
+nohead -r example4 build -c .#server-client &> /devnull
 echo "    - passed (4/7)"
-nohead -r example5 build -c .#shared-dir
+nohead -r example5 build -c .#shared-dir &> /devnull
 echo "    - passed (5/7)"
-nohead -r example6 build -c .#ssh-from-host
+nohead -r example6 build -c .#ssh-from-host &> /devnull
 echo "    - passed (6/7)"
-nohead -r example7 build -c .#vm-count-option
+nohead -r example7 build -c .#vm-count-option &> /devnull
 echo "    - passed (7/7)"
-
-
-nohead stopall &> /dev/null
 
 
 echo ""
