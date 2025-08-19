@@ -68,7 +68,7 @@
     diskImage = lib.mkOption {
       type = lib.types.nullOr lib.types.attrs;
       default = null;
-      description = "Null to disable making a disk image for this configurations. Otherwise, set parameters for make-disk-image.nix (see https://github.com/NixOS/nixpkgs/blob/master/nixos/lib/make-disk-image.nix). This option ignores count option - only one image per configuration will be built. Note: the disk image won't be built unless appropriate built flag is used when building the configs.";
+      description = "Null to disable making a disk image for this configurations. Otherwise, set parameters for make-disk-image.nix (see https://github.com/NixOS/nixpkgs/blob/master/nixos/lib/make-disk-image.nix). This option ignores count option - only one image per configuration will be built. Note: the disk image won't be built unless 'makeDiskImages = true' is set in your flake.nix file for the chosen config.";
     };
 
     # Options for internal use. Don't use them in your user configurations (configs.nix).

@@ -2,7 +2,7 @@
 let
 in
 {
-  # Reminder: add --images to build command or images won't be built.
+  # Reminder: set makeDiskImages to true in flake.nix or images won't be built.
 
   # Create single disk image with defined format
   singleImage = {

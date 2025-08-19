@@ -9,13 +9,18 @@ If you don’t know what `configs.nix` or compat env files are or haven’t read
 
 The main devshell is the devshell used for developing this project itself, as well as changing and using custom configuration.
 When entering devshell in flake, the flake copies the whole project directory (only git files) to the nix store.
-
-You can get that path with `absPath = self.outPath;`.
 When in the shell, you can print this with `nohead path`
+
+Use `nix develop` (or `nix --extra-experimental-features nix-command --extra-experimental-features flakes develop`) to enter shell with `nohead`.
 
 Changing main devshell:
 When you change anything from the main dev shell, you need to exit the current shell and re-enter it. That’ll trigger a rebuild.
-On a build, all files are copied to nix store and used there, so changing e.g. default.nix won’t take effect until you rebuild the shell.
+On a build, all files are copied to nix store and used there, so changing e.g. `build.nix` file won’t take effect until you rebuild the shell.
+
+Note: the project uses nix flakes, meaning it won't recognize any files that aren't added into git repo.
+
+Note: `nohead init` uses the `user/flake.nix` which fetches `src/build.nix` file from the GitHub. For local development, you want to change that to point to your local file - just replace `"${no-headache}/src/build.nix"` with something like `./path/to/local/build.nix` (after `nohead init`).
+
 
 ## Basic run
 
@@ -52,8 +57,7 @@ ssh -p 2222 nixy@localhost
 
 ## Testing
 
-todo - write tests - like examples but automated
-- automatically shut down the VM and check if the test fails if everything is shut down (automatically)
+To run all tests just run `test/test.sh` script within environment that has `nohead` available.
 
 ## Compatibility environments (compat envs)
 
@@ -98,9 +102,19 @@ Tailscale automatically assigns ip adresses and hostnames (giving it a suffix if
 - If I restart a VM (it has the same hostname), the suffix will be added, meaning I can’t get the IP address from a machine with such a hostname
 - Ephemeral is a fix, but it removed the old machine only after some timeout, which is too long
 
+## Git-crypt
+
+All secrets must be put in the `secrets/` directory, which is added to [git-crypt](https://github.com/AGWA/git-crypt).
+
+Check all protected files with `git-crypt status -e`.
+
+When you download this repo, run `git-crypt unlock`.
+
+TODO: test `git-crypt unlock`
+
 # Other tips
 
-`./result/bin/run-*-vm` has a lot of options. See that if needed.
+`./result/bin/run-*-vm` has a lot of options. See that if needed. (reminder: don't run that directly, use `nohead run` command)
 
 For debugging init.script, run `systemctl status script-at-boot` or `journalctl -u script-at-boot` inside the VM. Always check the full log with journalctl. systemctl crops only part of the log, and it might be very misleading.
 

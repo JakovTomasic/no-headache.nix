@@ -8,6 +8,7 @@ Or just read the examples and figure stuff out on the way.
 
 For concrete examples, read `configs.nix` files inside the `examples/` directory.
 
+An empty `configs.nix` file is created with `nohead init` in the root directory of the project and added to the `flake.nix`.
 Template for each `configs.nix` file is as follows:
 
 ```nix
@@ -36,6 +37,15 @@ Here's the breakdown:
 
 Note: this is just an opinionated suggestion for file format. The result from the Nix function should be as defined, but to create it you can use any Nix trickery you'd like (even separating it into multiple files).
 
+To use a config file, you must define it in the `flake.nix` inside the `packages` attribute set:
+```nix
+any-name-of-the-config = buildConfig {
+  configsFile = ./path/to/configs.nix;
+  makeDiskImages = false; # or true if you want the nohead build command to generate disk images, too
+};
+```
+
+**Important**: If you track the files using Git, you need to add files to Git for them to be recognizable to Nix. Otherwise, Nix will return a 'file not found' error.
 
 ## username
 
@@ -61,7 +71,7 @@ tailscaleAuthKeyFile = ./secrets/tailscale.authkey;
 ```
 
 For a full config example, see the `server-client` example.
--
+
 ## count
 
 A positive number defining how many instances of that VM to create with the same configuration.
@@ -145,7 +155,7 @@ Set the option to null to disable making a disk image for this machine/configura
 Otherwise, set parameters for [make-disk-image.nix](https://github.com/NixOS/nixpkgs/blob/master/nixos/lib/make-disk-image.nix) (read all possible parameters and values in the first curly braces `{ ... }`).
 
 This option ignores the count option, meaning only one image per configuration will be built.
-**Note**: the disk image won't be built unless the appropriate build flag is used when building the configs.
+**Note**: the disk image won't be built unless `makeDiskImages = true` is set in your flake.nix file for the chosen config.
 
 If configuring this option (if it isn't null), the `format` parameter must be defined.
 
@@ -169,7 +179,7 @@ The `nixos-config` option lets you define whatever standard NixOS configurations
 You can search all NixOS options [here](https://search.nixos.org/options).
 The value of the option is an attribute set with the same syntax and options as a standard NixOS configuration.nix file.
 
-Note that there is a default NixOS configuration located in the `devshells/main/base-configuration.nix` file.
+Note that there is a default NixOS configuration located in the `src/base-configuration.nix` file.
 These `nixos-config` options overwrite or extend the ones defined there in the `base-configuration.nix` file.
 Don't change that file unless you know what you're doing (read the [dev doc](./doc/dev.md) first).
 
@@ -185,7 +195,7 @@ nixos-config = {
 };
 ```
 
-**Warning**: don't define [virtualisation](https://search.nixos.org/options?sort=relevance&type=options&query=virtualisation) options here. See the [nixos-config-virt](#nixos-config-virt) option. But if building only VMs (without the `diskImage` option or `--images` build argument), virtualisation options can be normally used in the `nixos-config`. But for consistency, you can use nixos-config-virt.
+**Warning**: don't define [virtualisation](https://search.nixos.org/options?sort=relevance&type=options&query=virtualisation) options here. See the [nixos-config-virt](#nixos-config-virt) option. But if building only VMs (withou  `diskImage` config option or with `makeDiskImages = false` in your `flake.nix` file), virtualisation options can be normally used in the `nixos-config`. But for consistency, you can use nixos-config-virt.
 
 The following options are some standard NixOS options that you might find useful.
 
@@ -286,7 +296,7 @@ Values from `nixos-config` and `nixos-config-virt` are combined for VM builds.
 It's used mainly for any [virtualisation](https://search.nixos.org/options?sort=relevance&type=options&query=virtualisation) options because they cannot be defined in the `nixos-config` option.
 It's required only for avoiding avoiding `virtualisation.` options' errors when building disk images.
 
-**Note**: if building only VMs (without the `diskImage` option or `--images` build argument), virtualisation options can be normally used in the `nixos-config`. But for consistency, you can use nixos-config-virt.
+**Note**: if building only VMs (with `makeDiskImages = false` in your `flake.nix` file), virtualisation options can be normally used in the `nixos-config`. But for consistency, you can use nixos-config-virt.
 
 If you wish to overwrite a value and ignore the original nixos-config value, use `pkgs.lib.mkForce` (see examples below).
 

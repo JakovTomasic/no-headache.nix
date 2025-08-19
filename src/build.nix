@@ -1,8 +1,5 @@
-{ userConfigsFile, generateDiskImages, system }:
+{ pkgs, userConfigsFile, generateDiskImages, system }:
 let
-  # Flake version will be used because NIX_PATH is overwritten
-  pkgs = import <nixpkgs> { inherit system; };
-
   lib = pkgs.lib;
   configBuilder = { config, forDiskImage }: (import ./base-configuration.nix { inherit pkgs config forDiskImage; });
   # Helper function
@@ -107,8 +104,8 @@ let
           echo "Error! VM ${c.pureConfig.configName} doesn't have SSH from host enabled. Please set firstHostSshPort option in your configs file."
         else
           # Don't save the VM to user known hosts because when running other VM on the same port it'll throw an error that the VM is different and you'd have to remove it from known hosts file.
-          echo "running: ssh -p ${builtins.toString c.pureConfig.internal.hostSshPort} \"${c.pureConfig.username}@localhost\" -o \"UserKnownHostsFile=/dev/null\""
-          ssh -p ${builtins.toString c.pureConfig.internal.hostSshPort} "${c.pureConfig.username}@localhost" -o "UserKnownHostsFile=/dev/null"
+          # Use -q for quiet mode
+          ssh -q -p ${builtins.toString c.pureConfig.internal.hostSshPort} -o StrictHostKeyChecking=no -o "UserKnownHostsFile=/dev/null" "${c.pureConfig.username}@localhost" "$@"
         fi
       '';
     }
@@ -165,6 +162,7 @@ let
   qcow2Images = if !generateDiskImages then [] else mapIfNotNull (m:
     let
       configName = m.pureConfig.internal.baseConfigName;
+      # See all options: https://github.com/NixOS/nixpkgs/blob/master/nixos/lib/make-disk-image.nix
       gen-image = {}: make-disk-image ({
         inherit pkgs lib;
         config = m.diskImageSystem.config;
