@@ -41,10 +41,6 @@ no-headache.nix is a `nix build` command wrapper with a simple interface for con
 
 # Setup
 
-TODO: try these steps (on ubuntu?)
-- with and without git
-- write manual tests in dev doc for the ubuntu
-
 Setup steps. Tested on Ubuntu 24.04 LTS
 - open terminal
 - install Nix package manager [official instructions](https://nixos.org/download/)
@@ -53,10 +49,10 @@ Setup steps. Tested on Ubuntu 24.04 LTS
         - Both Single-user installation and Multi-user installation should work. For a bit easier usage, install Multi-user installation
     - Run `nix --version` to verify Nix is installed
         - for Single-user installation, you may need to run `. /home/ubuntu/.nix-profile/etc/profile.d/nix.sh` before using nix (as instructed after installation)
-- run `nix develop github:JakovTomasic/no-headache.nix` to enter into development shell that has the `nohead` command (if you get errors, run `nix --extra-experimental-features nix-command --extra-experimental-features flakes develop github:JakovTomasic/no-headache.nix`)
+- run `nix develop github:JakovTomasic/no-headache.nix` to enter into development shell that has the `nohead` command (if you get an error, run `nix --extra-experimental-features nix-command --extra-experimental-features flakes develop github:JakovTomasic/no-headache.nix`)
     - to install the project permanently, run `nix --extra-experimental-features nix-command --extra-experimental-features flakes profile install github:JakovTomasic/no-headache.nix` or add it to your nix configuration
 - run `nohead init` to create a new project (optionally, rename the created directory) and cd into the created directory (the root directory of your project)
-    - if the project is tracked with Git, run `git-crypt init` and see detailed instructions below
+    - if the project is tracked with Git, run `git-crypt init` and see detailed instructions below (enter the development shell if you don't have it installed)
 - build an example configuration: `nohead build -c .#vm-count-option` (run this inside the generated directory)
 - run all VMs with `nohead runall`
 - stop all VMs with `nohead stopall`
@@ -93,8 +89,6 @@ Usage instructions below reference individual examples.
 The next steps explain how to use this project.
 
 Everything can be run via the `nohead` command that aims to be so simple that, once you get familiar with it, you don't even need to use your head.
-
-TODO: test this:
 
 You can access the command in a few ways:
 - open temporary bash shell (development environment) that has `nohead` by running `nix develop github:JakovTomasic/no-headache.nix`
