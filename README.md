@@ -3,7 +3,7 @@
 
 **N**otably **O**pinionated yet **H**ighly **E**xtensible **A**nd **D**eclarative **A**pproach for **C**onfiguring **H**undreds of **E**nvironments (using Nix)
 
-no-headache.nix is a development and testing environment powered by the Nix package manager, allowing you to define and run multiple declarative, reproducible, and isolated NixOS virtual machines (VMs) and disk images with minimal setup. It’s ideal for projects that require per-VM configuration, quick and easy VM setup, or clean state environments, all without the overhead of complex virtualisation systems or cloud infrastructure.
+no-headache.nix is a development and testing environment powered by the Nix package manager. It lets you define and run multiple declarative, reproducible, and isolated NixOS virtual machines (VMs) and disk images with minimal setup. It's made for projects that require per-VM declarative configuration, quick and easy VM setup, and running multiple instances of each configuration, all without the mental overhead of complex virtualisation systems or cloud infrastructure.
 
 Key Features:
 
