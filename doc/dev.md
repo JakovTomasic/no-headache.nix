@@ -108,9 +108,12 @@ All secrets must be put in the `secrets/` directory, which is added to [git-cryp
 
 Check all protected files with `git-crypt status -e`.
 
-When you download this repo, run `git-crypt unlock`.
-
-TODO: test `git-crypt unlock`
+Steps for adding encryption:
+- List your available gpg keys: `gpg --list-keys --keyid-format LONG`
+- Then add the key with `git-crypt add-gpg-user <id or email>`
+- then do `git-crypt lock` and `git-crypt unlock as you need`
+- Before using secrets make sure they're unlocked (`git-crypt unlock`).
+- Note: use `git-crypt lock -k ~/tmp/no-headache-git-crypt.key` and `git-crypt unlock ~/tmp/no-headache-git-crypt.key` (the key is exported from git-crypt)
 
 # Other tips
 
