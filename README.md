@@ -100,6 +100,7 @@ You can access the command in a few ways:
 - open temporary bash shell (development environment) that has `nohead` by running `nix develop github:JakovTomasic/no-headache.nix`
     - if you get an error, use the full command: `nix --extra-experimental-features nix-command --extra-experimental-features flakes develop github:JakovTomasic/no-headache.nix`
     - to exit the dev shell, just close the terminal or run `exit`.
+    - once you run `nohead init`, you can enter the reproducible dev shell locally by running `nix --extra-experimental-features nix-command --extra-experimental-features flakes develop` in the project root directory. This is recommended over always accessing the latest shell from GitHub.
 - install the project permanently by running `nix --extra-experimental-features nix-command --extra-experimental-features flakes profile install github:JakovTomasic/no-headache.nix` or add it to your machine's Nix configuration
 
 ## Configurations
@@ -213,7 +214,7 @@ See setup steps before using tailscale in your project or running examples that 
 When `tailscaleAuthKeyFile` option is set, Tailscale will automatically be initialized in the VM/image.
 
 How to connect to tailscale:
-- If you don't have tailscale installed on your host machine, enter shell with tailscale by running `nix --extra-experimental-features nix-command --extra-experimental-features flakes develop github:JakovTomasic/no-headache.nix#tailscale` from the project root directory.
+- If you don't have tailscale installed on your host machine, enter shell with tailscale by running `nix --extra-experimental-features nix-command --extra-experimental-features flakes develop .#tailscale` from the project root directory.
 - Run `sudo tailscaled` to start the tailscale service.
 - Open a new shell (new terminal), and enter the tailscale environment with the same command
 - In the new shell, run `sudo tailscale up` and auth via browser, or run `sudo tailscale up --authkey=tskey-xxxxxxxxxxxxxxxx` if you want to use a key

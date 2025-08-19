@@ -58,6 +58,12 @@
 
         # NOTE: you can add add more configs here
       };
+
+      devShells = {
+        tailscale = no-headache.devShells.${system}.tailscale;
+        nohead = no-headache.devShells.${system}.nohead;
+        default = no-headache.devShells.${system}.default;
+      };
     }
   );
 }
