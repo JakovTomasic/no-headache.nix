@@ -4,6 +4,7 @@
 **N**otably **O**pinionated yet **H**ighly **E**xtensible **A**nd **D**eclarative **A**pproach for **C**onfiguring **H**undreds of **E**nvironments (using Nix)
 
 no-headache.nix is a development and testing environment powered by the Nix package manager. It lets you define and run multiple declarative, reproducible, and isolated NixOS virtual machines (VMs) and disk images with minimal setup. It's made for projects that require per-VM declarative configuration, quick and easy VM setup, and running multiple instances of each configuration, all without the mental overhead of complex virtualisation systems or cloud infrastructure.
+Essentially, it's a `nix build` command wrapper with a simple interface for configuring and running many virtual machines.
 
 Key Features:
 
@@ -21,42 +22,23 @@ Key Features:
 
 This is user documentation. For developer documentation, see [dev doc](./doc/dev.md).
 
-## How it works
-
-no-headache.nix is a `nix build` command wrapper with a simple interface for configuring and running many virtual machines.
-
-- Nix is the only dependency required.
-- All other tools (e.g., QEMU, build scripts) are installed automatically through Nix.
-- VMs and disk images are defined using a `configs.nix` file using simple Nix syntax.
-- You control:
-    - Number of VM instances
-    - Username/password
-    - Scripts to auto-run on boot
-    - Port forwards for SSH
-    - Shared folders and file copies
-    - Optional VPN setup via Tailscale
-    - Full independent disk image build options
-    - Whole NixOS VM configurations
-- Python and other environments are supported using FHS-compatible environments (or using your custom configurations).
-
 # Setup
 
 Setup steps. Tested on Ubuntu 24.04 LTS
-- open terminal
-- install Nix package manager [official instructions](https://nixos.org/download/)
-    - run the provided command and follow instructions
-        - install curl if needed (on Ubuntu: `sudo apt install curl`)
+- Open terminal
+- Install Nix package manager [official instructions](https://nixos.org/download/)
+    - Run the provided command and follow instructions
+        - Install curl if needed (on Ubuntu: `sudo apt install curl`)
         - Both Single-user installation and Multi-user installation should work. For a bit easier usage, install Multi-user installation
     - Run `nix --version` to verify Nix is installed
-        - for Single-user installation, you may need to run `. /home/ubuntu/.nix-profile/etc/profile.d/nix.sh` before using nix (as instructed after installation)
-- run `nix develop github:JakovTomasic/no-headache.nix` to enter into development shell that has the `nohead` command (if you get an error, run `nix --extra-experimental-features nix-command --extra-experimental-features flakes develop github:JakovTomasic/no-headache.nix`)
-    - to install the project permanently, run `nix --extra-experimental-features nix-command --extra-experimental-features flakes profile install github:JakovTomasic/no-headache.nix` or add it to your nix configuration
-- run `nohead init` to create a new project (optionally, rename the created directory) and cd into the created directory (the root directory of your project)
-    - if the project is tracked with Git, run `git-crypt init` and see detailed instructions below (enter the development shell if you don't have it installed)
-- build an example configuration: `nohead build -c .#vm-count-option` (run this inside the generated directory)
-- run all VMs with `nohead runall`
-- stop all VMs with `nohead stopall`
-- that's it! Write your own configurations. Happy configuring!
+        - For Single-user installation, you may need to run `. /home/ubuntu/.nix-profile/etc/profile.d/nix.sh` before using nix (as instructed after installation)
+- Run `nix --extra-experimental-features nix-command --extra-experimental-features flakes develop github:JakovTomasic/no-headache.nix` to enter into the development shell to use the `nohead` command
+- Run `nohead init` to create a new project and cd into the created directory (the root directory of your project)
+    - If the project is tracked with Git, run `git-crypt init` to secure your `secrets/` directory (enter the development shell if you don't have git-crypt installed)
+- Build an example configuration: `nohead build -c .#vm-count-option` (run this inside the generated directory)
+- Run all VMs with `nohead runall`
+- Stop all VMs with `nohead stopall`
+- That's it! Write your own configurations. Happy configuring!
 
 
 ## Tailscale
@@ -112,6 +94,8 @@ To use a config file, you must define it in the `flake.nix`.
 
 Use the `nohead` command for everything.
 If don't want to use your precious brain cells for remembering subcommands, you can always run `nohead help` (or just `nohead` or `nohead --help` or `nohead h` or even `nohead whatisgoingon`, we try not to (over)think around here).
+
+Run `nohead init` to create a new project (optionally, rename the created directory).
 
 ### build
 
