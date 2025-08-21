@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, customArgs, ... }:
 let
   # Common script to run on startup
   script = ''
@@ -23,6 +23,10 @@ let
     # Print the type of the machine
     echo "$MACHINE_TYPE" > /home/nixy/machine_type.txt
     # You can use these environment variables in all your bash scripts in any VM
+
+    # You can use all values from customArgs attr set.
+    # When you need to use customArgs, you'll know it. Otherwise, just ignore this.
+    echo "${customArgs.customStringFromFlake}" > /home/nixy/customStringFromFlake.txt
   '';
 in
 {

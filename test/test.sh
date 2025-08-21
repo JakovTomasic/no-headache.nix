@@ -3,7 +3,7 @@
 
 
 
-# NOTE: set to true for pure test, set to false for reusing some long build results
+# NOTE: set to true for pure test, set to false for reusing some results that take a lot of time to build
 PURE_TEST=true
 
 
@@ -409,6 +409,8 @@ echo "    - passed (7/7)"
 echo ""
 echo "All tests have passed"
 echo "You might want to delete the temporary directory."
+echo ""
+echo "Examples were built but to test them thoroughly you need to do it manually (use already built instances in the test directory)."
 
 
 

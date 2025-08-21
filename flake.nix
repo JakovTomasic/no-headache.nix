@@ -1,5 +1,5 @@
 {
-  description = "Main flake for the whole project with a dev shell encapsulating needed files and executables";
+  description = "Main flake for the whole project with a dev shell encapsulating needed files and executables.";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
@@ -12,11 +12,11 @@
       # When this repo is downloaded from GitHub (or run locally) this is path to access all the files (in the nix store or locally on the system).
       absPath = ./.;
 
-      buildConfig = { configsFile, makeDiskImages }: (
+      buildConfig = { configsFile, makeDiskImages, customArgs ? {} }: (
         import ./src/build.nix {
           userConfigsFile = configsFile;
           generateDiskImages = makeDiskImages;
-          inherit pkgs system;
+          inherit pkgs system customArgs;
         }
       );
 
@@ -80,6 +80,9 @@
         vm-count-option = buildConfig {
           configsFile = ./examples/vm-count-option/configs.nix;
           makeDiskImages = false;
+          customArgs = {
+            customStringFromFlake = "This string is defined in the development flake.nix";
+          };
         };
       };
 

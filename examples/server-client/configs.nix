@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, customArgs, ... }:
 let
   # you can define variables here in let...in for less code duplication
 

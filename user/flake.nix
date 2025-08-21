@@ -1,5 +1,5 @@
 {
-  description = "Auto-generated user flake for root directory of your no-headache configuring.";
+  description = "Auto-generated user flake in the root directory of your no-headache project.";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
@@ -11,11 +11,11 @@
   outputs = { self, nixpkgs, flake-utils, no-headache }: flake-utils.lib.eachDefaultSystem (system:
     let
       pkgs = import nixpkgs { inherit system; };
-      buildConfig = { configsFile, makeDiskImages }: (
-        import "${no-headache}/src/build.nix" { 
-          userConfigsFile = configsFile; 
-          generateDiskImages = makeDiskImages; 
-          inherit pkgs system; 
+      buildConfig = { configsFile, makeDiskImages, customArgs ? {} }: (
+        import "${no-headache}/src/build.nix" {
+          userConfigsFile = configsFile;
+          generateDiskImages = makeDiskImages;
+          inherit pkgs system customArgs;
         }
       );
     in {
@@ -47,6 +47,9 @@
         vm-count-option = buildConfig {
           configsFile = ./examples/vm-count-option/configs.nix;
           makeDiskImages = false;
+          customArgs = {
+            customStringFromFlake = "This string is defined in the flake.nix";
+          };
         };
 
         # This file was automatically generated on 'nohead init'.

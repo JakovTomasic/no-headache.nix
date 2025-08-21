@@ -59,6 +59,8 @@ ssh -p 2222 nixy@localhost
 
 To run all tests just run `test/test.sh` script within environment that has `nohead` available.
 
+Note: `nohead init` uses the `user/flake.nix` which fetches `src/build.nix` file from the GitHub. For local development, you want to change that to point to your local file or run tests after publishing changes to GitHub (preferably, different branch).
+
 ## Compatibility environments (compat envs)
 
 Building compat envs (any nix environments) inside a VM is slow. Always prebuild them.

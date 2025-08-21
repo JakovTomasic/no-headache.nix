@@ -1,4 +1,4 @@
-{ pkgs, ... }:
+{ pkgs, customArgs, ... }:
 let
   # use ssh key to avoid entering ssh password manually (tests need to run automatically)
   sshKeyFile = ../secrets/sshkeys/example_ssh_key.pub;

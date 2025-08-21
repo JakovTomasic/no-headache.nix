@@ -1,4 +1,4 @@
-{ pkgs, userConfigsFile, generateDiskImages, system }:
+{ pkgs, userConfigsFile, generateDiskImages, system, customArgs }:
 let
   lib = pkgs.lib;
   configBuilder = { config, forDiskImage }: (import ./base-configuration.nix { inherit pkgs config forDiskImage; });
@@ -7,7 +7,7 @@ let
     builtins.filter (x: x != null) (map f list);
 
 
-  userConfigs = import userConfigsFile { inherit pkgs; };
+  userConfigs = import userConfigsFile { inherit pkgs customArgs; };
   # Generates nix configurations (effectively configuration.nix files)
   configurations = builtins.concatLists (builtins.attrValues (builtins.mapAttrs (name: value:
     let
