@@ -226,7 +226,7 @@ nohead list &> list
 echo "empty" > list-expected
 diff -q list list-expected # the script will crash if files differ
 
-nohead stopall
+nohead stopall &> /dev/null
 cd ..
 echo "    - passed"
 
@@ -392,17 +392,17 @@ cp "$PROJECT_ROOT_DIR/secrets/tailscale.authkey" secrets/
 
 nohead -r example1 build -c .#copy-to-home &> /dev/null
 echo "    - passed (1/7)"
-nohead -r example2 build -c .#disk-images &> /devnull
+nohead -r example2 build -c .#disk-images &> /dev/null
 echo "    - passed (2/7)"
-nohead -r example3 build -c .#python &> /devnull
+nohead -r example3 build -c .#python &> /dev/null
 echo "    - passed (3/7)"
-nohead -r example4 build -c .#server-client &> /devnull
+nohead -r example4 build -c .#server-client &> /dev/null
 echo "    - passed (4/7)"
-nohead -r example5 build -c .#shared-dir &> /devnull
+nohead -r example5 build -c .#shared-dir &> /dev/null
 echo "    - passed (5/7)"
-nohead -r example6 build -c .#ssh-from-host &> /devnull
+nohead -r example6 build -c .#ssh-from-host &> /dev/null
 echo "    - passed (6/7)"
-nohead -r example7 build -c .#vm-count-option &> /devnull
+nohead -r example7 build -c .#vm-count-option &> /dev/null
 echo "    - passed (7/7)"
 
 
